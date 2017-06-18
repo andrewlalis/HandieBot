@@ -6,6 +6,8 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.EmbedBuilder;
 
+import java.awt.*;
+
 /**
  * @author Andrew Lalis
  * Class to process commands.
@@ -35,7 +37,7 @@ public class CommandHandler {
             if (command.equals("play") && args.length == 1){
                 this.bot.loadAndPlay(channel, args[0]);
             } else if (command.equals("help")){
-
+                this.sendHelpInfo(user);
             }
         }
     }
@@ -71,10 +73,23 @@ public class CommandHandler {
         return new String[0];
     }
 
+    /**
+     * Method to send a useful list of commands to any user if they desire.
+     * @param user The user to send the message to.
+     */
     private void sendHelpInfo(IUser user){
         IPrivateChannel pm = user.getOrCreatePMChannel();
         EmbedBuilder builder = new EmbedBuilder();
 
+        builder.withAuthorName("HandieBot");
+        builder.withAuthorUrl("https://github.com/andrewlalis/HandieBot");
+        builder.withAuthorIcon("https://github.com/andrewlalis/HandieBot/blob/master/src/main/resources/icon.png");
+
+        builder.withColor(new Color(255, 0, 0));
+        builder.withDescription("I'm a discord bot that can manage music, as well as some other important functions which will be implemented later on. Some commands are shown below.");
+        builder.appendField("Commands:", "play, skip, help", false);
+
+        pm.sendMessage(builder.build());
     }
 
     /**
