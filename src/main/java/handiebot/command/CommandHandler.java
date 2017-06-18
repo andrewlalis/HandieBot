@@ -35,9 +35,13 @@ public class CommandHandler {
         String[] args = extractArgs(message);
         if (guild != null && command != null){
             if (command.equals("play") && args.length == 1){
-                this.bot.loadAndPlay(channel, args[0]);
+                this.bot.getMusicPlayer().loadToQueue(guild, args[0]);
+            } else if (command.equals("skip") && args.length == 0){
+                this.bot.getMusicPlayer().skipTrack(guild);
             } else if (command.equals("help")){
                 this.sendHelpInfo(user);
+            } else if (command.equals("playnow") && args.length == 1){
+
             }
         }
     }
