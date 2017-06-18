@@ -14,7 +14,7 @@ import java.awt.*;
  */
 public class CommandHandler {
 
-    private static String PREFIX = "!";
+    public static String PREFIX = "!";
 
     private final HandieBot bot;
 
@@ -40,8 +40,10 @@ public class CommandHandler {
                 this.bot.getMusicPlayer().skipTrack(guild);
             } else if (command.equals("help")){
                 this.sendHelpInfo(user);
-            } else if (command.equals("playnow") && args.length == 1){
-
+            } else if (command.equals("queue") && args.length == 0){
+                this.bot.getMusicPlayer().showQueueList(guild);
+            } else if (command.equals("repeat")){
+                this.bot.getMusicPlayer().toggleRepeat(guild);
             }
         }
     }

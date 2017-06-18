@@ -6,6 +6,8 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -16,6 +18,8 @@ public class TrackScheduler extends AudioEventAdapter {
 
     private final AudioPlayer player;
     private final BlockingQueue<AudioTrack> queue;
+    private boolean repeat = false;
+    private AudioTrack currentTrack = null;
 
     /**
      * Constructs a new track scheduler with the given player.
@@ -24,6 +28,22 @@ public class TrackScheduler extends AudioEventAdapter {
     public TrackScheduler(AudioPlayer player){
         this.player = player;
         this.queue = new LinkedBlockingQueue<>();
+    }
+
+    /**
+     * Sets whether or not songs get placed back into the queue once they're played.
+     * @param value True if the playlist should repeat.
+     */
+    public void setRepeat(boolean value){
+        this.repeat = value;
+    }
+
+    /**
+     * Returns whether or not repeating is enabled.
+     * @return True if repeating, false otherwise.
+     */
+    public boolean isRepeating(){
+        return this.repeat;
     }
 
     /**
@@ -41,7 +61,12 @@ public class TrackScheduler extends AudioEventAdapter {
      * Starts the next track, stopping the current one if it's playing.
      */
     public void nextTrack(){
-        player.startTrack(queue.poll(), false);
+        AudioTrack track = queue.poll();
+        player.startTrack(track, false);
+        this.currentTrack = track;
+        if (this.repeat){
+            this.queue.add(track);
+        }
     }
 
     @Override
@@ -49,8 +74,17 @@ public class TrackScheduler extends AudioEventAdapter {
         if (endReason.mayStartNext){
             nextTrack();
         } else {
+            this.currentTrack = null;
             System.out.println(endReason.toString());
         }
+    }
+
+    /**
+     * Returns a list of tracks in the queue.
+     * @return A list of tracks in the queue.
+     */
+    public List<AudioTrack> queueList(){
+        return new ArrayList<>(this.queue);
     }
 
     @Override
