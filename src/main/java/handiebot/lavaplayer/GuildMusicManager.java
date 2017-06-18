@@ -2,6 +2,7 @@ package handiebot.lavaplayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import sx.blah.discord.handle.obj.IGuild;
 
 /**
  * @author Andrew Lalis
@@ -13,9 +14,9 @@ public class GuildMusicManager {
 
     public final TrackScheduler scheduler;
 
-    public GuildMusicManager(AudioPlayerManager manager){
+    public GuildMusicManager(AudioPlayerManager manager, IGuild guild){
         this.player = manager.createPlayer();
-        this.scheduler = new TrackScheduler(this.player);
+        this.scheduler = new TrackScheduler(this.player, guild);
         this.player.addListener(this.scheduler);
     }
 

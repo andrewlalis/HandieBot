@@ -8,14 +8,17 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import handiebot.command.CommandHandler;
+import handiebot.utils.DisappearingMessage;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Andrew Lalis
@@ -24,37 +27,94 @@ import java.util.Map;
  */
 public class MusicPlayer {
 
-    private static String CHANNEL_NAME = "music";
+    //Name for the message and voice channels dedicated to this bot.
+    public static String CHANNEL_NAME = "HandieBotMusic";
 
     private final AudioPlayerManager playerManager;
-    private final Map<Long, GuildMusicManager> musicManagers;
+
+    /*
+    Mappings of music managers, channels and voice channels for each guild.
+     */
+    private Map<IGuild, GuildMusicManager> musicManagers;
+    private Map<IGuild, IChannel> chatChannels;
+    private Map<IGuild, IVoiceChannel> voiceChannels;
 
     public MusicPlayer(){
-        this.musicManagers = new HashMap<>();
+        //Initialize player manager.
         this.playerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerLocalSource(playerManager);
         AudioSourceManagers.registerRemoteSources(playerManager);
+
+        //Initialize all maps.
+        this.musicManagers = new HashMap<>();
+        this.chatChannels = new HashMap<>();
+        this.voiceChannels = new HashMap<>();
     }
 
     /**
-     * Toggles the playlist's repeating.
-     * @param guild The guild to perform the action on.
+     * Gets the music manager specific to a particular guild.
+     * @param guild The guild to get the music manager for.
+     * @return The music manager for a guild.
      */
-    public void toggleRepeat(IGuild guild){
-        GuildMusicManager musicManager = this.getGuildMusicManager(guild);
-        musicManager.scheduler.setRepeat(!musicManager.scheduler.isRepeating());
-        this.getMessageChannel(guild).sendMessage("**Repeat** is now *"+(musicManager.scheduler.isRepeating() ? "On" : "Off")+"*.");
+    private GuildMusicManager getMusicManager(IGuild guild){
+        if (!this.musicManagers.containsKey(guild)){
+            System.out.println("Registering guild, creating audio provider.");
+            this.musicManagers.put(guild, new GuildMusicManager(this.playerManager, guild));
+            guild.getAudioManager().setAudioProvider(this.musicManagers.get(guild).getAudioProvider());
+        }
+        return this.musicManagers.get(guild);
+    }
+
+    /**
+     * Gets the chat channel specific to a particular guild. This channel is used send updates about playback and
+     * responses to people's commands. If none exists, the bot will attempt to make a channel.
+     * @param guild The guild to get the channel from.
+     * @return A message channel on a particular guild that is specifically for music.
+     */
+    private IChannel getChatChannel(IGuild guild){
+        if (!this.chatChannels.containsKey(guild)){
+            List<IChannel> channels = guild.getChannelsByName(CHANNEL_NAME.toLowerCase());
+            if (channels.isEmpty()){
+                System.out.println("Found "+channels.size()+" matches for message channel, creating new one.");
+                this.chatChannels.put(guild, guild.createChannel(CHANNEL_NAME.toLowerCase()));
+            } else {
+                this.chatChannels.put(guild, channels.get(0));
+            }
+        }
+        return this.chatChannels.get(guild);
+    }
+
+    /**
+     * Gets the voice channel associated with a particular guild. This channel is used for audio playback. If none
+     * exists, the bot will attempt to make a voice channel.
+     * @param guild The guild to get the channel from.
+     * @return The voice channel on a guild that is for this bot.
+     */
+    private IVoiceChannel getVoiceChannel(IGuild guild){
+        if (!this.voiceChannels.containsKey(guild)){
+            List<IVoiceChannel> channels = guild.getVoiceChannelsByName(CHANNEL_NAME);
+            if (channels.isEmpty()){
+                System.out.println("Found "+channels.size()+" matches for voice channel, creating new one.");
+                this.voiceChannels.put(guild, guild.createVoiceChannel(CHANNEL_NAME));
+            } else {
+                this.voiceChannels.put(guild, channels.get(0));
+            }
+        }
+        IVoiceChannel vc = this.voiceChannels.get(guild);
+        if (!vc.isConnected()){
+            System.out.println("Joined voice channel.");
+            vc.join();
+        }
+        return vc;
     }
 
     /**
      * Sends a formatted message to the guild about the first few items in a queue.
-     * @param guild The guild to show the queue for.
      */
     public void showQueueList(IGuild guild){
-        GuildMusicManager musicManager = this.getGuildMusicManager(guild);
-        List<AudioTrack> tracks = musicManager.scheduler.queueList();
+        List<AudioTrack> tracks = getMusicManager(guild).scheduler.queueList();
         if (tracks.size() == 0) {
-            this.getMessageChannel(guild).sendMessage("The queue is empty. Use **"+ CommandHandler.PREFIX+"play** *URL* to add songs.");
+            new DisappearingMessage(getChatChannel(guild), "The queue is empty. Use **"+ CommandHandler.PREFIX+"play** *URL* to add songs.", 3000);
         } else {
             EmbedBuilder builder = new EmbedBuilder();
             builder.withColor(255, 0, 0);
@@ -74,22 +134,22 @@ public class MusicPlayer {
                 sb.append(seconds % 60);
                 sb.append("]\n");
             }
-            builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " tracks.", sb.toString(), false);
-            this.getMessageChannel(guild).sendMessage(builder.build());
+            builder.withTimestamp(System.currentTimeMillis());
+            builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track"+(tracks.size() > 1 ? "s" : "")+".", sb.toString(), false);
+            getChatChannel(guild).sendMessage(builder.build());
         }
     }
 
     /**
      * Loads a URL to the queue, or outputs an error message if it fails.
-     * @param guild The guild to load the URL to.
      * @param trackURL A string representing a youtube/soundcloud URL.
      */
     public void loadToQueue(IGuild guild, String trackURL){
-        GuildMusicManager musicManager = this.getGuildMusicManager(guild);
-        this.playerManager.loadItemOrdered(musicManager, trackURL, new AudioLoadResultHandler() {
+        this.playerManager.loadItemOrdered(getMusicManager(guild), trackURL, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack audioTrack) {
-                addToQueue(guild, musicManager, audioTrack);
+                System.out.println("Track successfully loaded: "+audioTrack.getInfo().title);
+                addToQueue(guild, audioTrack);
             }
 
             @Override
@@ -99,92 +159,59 @@ public class MusicPlayer {
                     if (firstTrack == null){
                         firstTrack = audioPlaylist.getTracks().get(0);
                     }
-                    addToQueue(guild, musicManager,firstTrack);
+                    addToQueue(guild, firstTrack);
                 }
             }
 
             @Override
             public void noMatches() {
-                getMessageChannel(guild).sendMessage("Unable to find a result for: "+trackURL);
+                new DisappearingMessage(getChatChannel(guild), "Unable to find a result for: "+trackURL, 3000);
             }
 
             @Override
             public void loadFailed(FriendlyException e) {
-                getMessageChannel(guild).sendMessage("Unable to load. "+e.getMessage());
+                new DisappearingMessage(getChatChannel(guild), "Unable to load. "+e.getMessage(), 3000);
             }
         });
     }
 
     /**
      * Adds a track to the queue and sends a message to the appropriate channel notifying users.
-     * @param guild The guild to queue the track in.
-     * @param musicManager The music manager to use.
      * @param track The track to queue.
      */
-    public void addToQueue(IGuild guild, GuildMusicManager musicManager, AudioTrack track){
-        IVoiceChannel voiceChannel = this.connectToMusicChannel(guild);
+    public void addToQueue(IGuild guild, AudioTrack track){
+        IVoiceChannel voiceChannel = getVoiceChannel(guild);
         if (voiceChannel != null){
-            musicManager.scheduler.queue(track);
-            IChannel channel = this.getMessageChannel(guild);
-            channel.sendMessage("Added **"+track.getInfo().title+"** to the queue.");
+            //Check to make sure sound can be played.
+            if (guild.getAudioManager().getAudioProvider() == null){
+                new DisappearingMessage(getChatChannel(guild), "Audio provider not set. Please try again.", 3000);
+                guild.getAudioManager().setAudioProvider(getMusicManager(guild).getAudioProvider());
+                return;
+            }
+            long timeUntilPlay = getMusicManager(guild).scheduler.getTimeUntilDone();
+            getMusicManager(guild).scheduler.queue(track);
+            //Build message.
+            StringBuilder sb = new StringBuilder();
+            sb.append("Added **").append(track.getInfo().title).append("** to the queue.");
+            //If there's some tracks in the queue, get the time until this one plays.
+            if (timeUntilPlay != 0){
+                sb.append(String.format("\nTime until play: %d min, %d sec",
+                        TimeUnit.MILLISECONDS.toMinutes(timeUntilPlay),
+                        TimeUnit.MILLISECONDS.toSeconds(timeUntilPlay) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeUntilPlay))
+                ));
+            }
+            IMessage message = getChatChannel(guild).sendMessage(sb.toString());
+            DisappearingMessage.deleteMessageAfter(3000, message);
         }
 
     }
 
     /**
      * Skips the current track.
-     * @param guild The guild to perform the skip on.
      */
     public void skipTrack(IGuild guild){
-        this.getGuildMusicManager(guild).scheduler.nextTrack();
-        this.getMessageChannel(guild).sendMessage("Skipping the current track.");
-    }
-
-    /**
-     * Gets or creates a music manager for a specific guild.
-     * @param guild The guild to get a manager for.
-     * @return A Music Manager for the guild.
-     */
-    private synchronized GuildMusicManager getGuildMusicManager(IGuild guild){
-        long guildId = Long.parseLong(guild.getStringID());
-        GuildMusicManager musicManager = this.musicManagers.get(guildId);
-        if (musicManager == null){
-            musicManager = new GuildMusicManager(this.playerManager);
-            musicManagers.put(guildId, musicManager);
-        }
-        guild.getAudioManager().setAudioProvider(musicManager.getAudioProvider());
-        return musicManager;
-    }
-
-    /**
-     * Searches for and attempts to connect to a channel called 'music'.
-     * @param guild the guild to get voice channels from.
-     * @return The voice channel the bot is now connected to.
-     */
-    private IVoiceChannel connectToMusicChannel(IGuild guild){
-        List<IVoiceChannel> voiceChannels = guild.getVoiceChannelsByName(CHANNEL_NAME);
-        if (voiceChannels.size() == 1){
-            if (!voiceChannels.get(0).isConnected())
-                voiceChannels.get(0).join();
-            return voiceChannels.get(0);
-        }
-        IVoiceChannel voiceChannel = guild.createVoiceChannel(CHANNEL_NAME);
-        voiceChannel.join();
-        return voiceChannel;
-    }
-
-    /**
-     * Returns a 'music' message channel where the bot can post info on playing songs, user requests,
-     * etc.
-     * @param guild The guild to get channels from.
-     * @return The channel with that name.
-     */
-    private IChannel getMessageChannel(IGuild guild){
-        List<IChannel> channels = guild.getChannelsByName(CHANNEL_NAME);
-        if (channels.size() == 1){
-            return channels.get(0);
-        }
-        return guild.createChannel(CHANNEL_NAME);
+        getMusicManager(guild).scheduler.nextTrack();
+        new DisappearingMessage(getChatChannel(guild), "Skipping the current track.", 3000);
     }
 
 }

@@ -2,6 +2,7 @@ package handiebot.command;
 
 import com.sun.istack.internal.NotNull;
 import handiebot.HandieBot;
+import handiebot.utils.DisappearingMessage;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.EmbedBuilder;
@@ -34,16 +35,24 @@ public class CommandHandler {
         String command = extractCommand(message);
         String[] args = extractArgs(message);
         if (guild != null && command != null){
+            DisappearingMessage.deleteMessageAfter(2000, message);
             if (command.equals("play") && args.length == 1){
+                //Play or queue a song.
                 this.bot.getMusicPlayer().loadToQueue(guild, args[0]);
             } else if (command.equals("skip") && args.length == 0){
+                //Skip the current song.
                 this.bot.getMusicPlayer().skipTrack(guild);
             } else if (command.equals("help")){
-                this.sendHelpInfo(user);
+                //Send a PM to the user with help info.
+                this.sendHelpInfo(user);//TODO finish the help command and fill in with new descriptions each time.
             } else if (command.equals("queue") && args.length == 0){
+                //Display the first few items of the queue.
                 this.bot.getMusicPlayer().showQueueList(guild);
             } else if (command.equals("repeat")){
-                this.bot.getMusicPlayer().toggleRepeat(guild);
+                //Toggle repeat.
+                //TODO implement repeat command.
+            } else if (command.equals("clear")){
+                //TODO clear command.
             }
         }
     }
