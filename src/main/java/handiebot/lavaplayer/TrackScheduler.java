@@ -8,10 +8,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Andrew Lalis
@@ -19,9 +16,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class TrackScheduler extends AudioEventAdapter {
 
     private final AudioPlayer player;
-    private final BlockingQueue<AudioTrack> queue;
+
+    private Playlist activePlaylist;
 
     private boolean repeat = false;
+    private boolean shuffle = false;
 
     private IGuild guild;
 
@@ -32,7 +31,8 @@ public class TrackScheduler extends AudioEventAdapter {
     public TrackScheduler(AudioPlayer player, IGuild guild){
         this.player = player;
         this.guild = guild;
-        this.queue = new LinkedBlockingQueue<>();
+        this.activePlaylist = new Playlist("HandieBot Active Playlist", 283652989212688384L);
+        //this.activePlaylist = new Playlist("HandieBot Active Playlist");
     }
 
     /**
@@ -49,6 +49,22 @@ public class TrackScheduler extends AudioEventAdapter {
      */
     public boolean isRepeating(){
         return this.repeat;
+    }
+
+    /**
+     * Sets whether or not to randomize the next track to be played.
+     * @param value True if shuffled should become active.
+     */
+    public void setShuffle(boolean value){
+        this.shuffle = value;
+    }
+
+    /**
+     * Returns whether or not shuffling is active.
+     * @return True if shuffling is active, false otherwise.
+     */
+    public boolean isShuffling(){
+        return this.shuffle;
     }
 
     /**
@@ -72,7 +88,7 @@ public class TrackScheduler extends AudioEventAdapter {
      * @return A list of tracks in the queue.
      */
     public List<AudioTrack> queueList(){
-        return new ArrayList<>(this.queue);
+        return this.activePlaylist.getTracks();
     }
 
     /**
@@ -83,7 +99,8 @@ public class TrackScheduler extends AudioEventAdapter {
         if (player.getPlayingTrack() == null){
             player.startTrack(track, false);
         } else {
-            queue.offer(track);
+            this.activePlaylist.addTrack(track);
+            this.activePlaylist.save();
         }
     }
 
@@ -91,11 +108,16 @@ public class TrackScheduler extends AudioEventAdapter {
      * Starts the next track, stopping the current one if it's playing.
      */
     public void nextTrack(){
-        AudioTrack track = queue.poll();
+        AudioTrack track = (this.repeat ? this.activePlaylist.getNextTrackAndRequeue(this.shuffle) : this.activePlaylist.getNextTrackAndRemove(this.shuffle));
+        this.activePlaylist.save();
         player.startTrack(track, false);
-        if (this.repeat){
-            this.queue.add(track);
-        }
+    }
+
+    /**
+     * If the user wishes to quit, stop the currently played track.
+     */
+    public void quit(){
+        this.player.stopTrack();
     }
 
     @Override
@@ -111,6 +133,7 @@ public class TrackScheduler extends AudioEventAdapter {
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         System.out.println("Track ended.");
         if (endReason.mayStartNext){
+            System.out.println("Moving to next track.");
             nextTrack();
         } else {
             System.out.println(endReason.toString());
@@ -120,11 +143,6 @@ public class TrackScheduler extends AudioEventAdapter {
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception){
         exception.printStackTrace();
-    }
-
-    @Override
-    public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {
-        super.onTrackStuck(player, track, thresholdMs);
     }
 
 }

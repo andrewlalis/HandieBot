@@ -100,12 +100,7 @@ public class MusicPlayer {
                 this.voiceChannels.put(guild, channels.get(0));
             }
         }
-        IVoiceChannel vc = this.voiceChannels.get(guild);
-        if (!vc.isConnected()){
-            System.out.println("Joined voice channel.");
-            vc.join();
-        }
-        return vc;
+        return this.voiceChannels.get(guild);
     }
 
     /**
@@ -136,7 +131,8 @@ public class MusicPlayer {
             }
             builder.withTimestamp(System.currentTimeMillis());
             builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track"+(tracks.size() > 1 ? "s" : "")+".", sb.toString(), false);
-            getChatChannel(guild).sendMessage(builder.build());
+            IMessage message = getChatChannel(guild).sendMessage(builder.build());
+            DisappearingMessage.deleteMessageAfter(6000, message);
         }
     }
 
@@ -182,11 +178,8 @@ public class MusicPlayer {
     public void addToQueue(IGuild guild, AudioTrack track){
         IVoiceChannel voiceChannel = getVoiceChannel(guild);
         if (voiceChannel != null){
-            //Check to make sure sound can be played.
-            if (guild.getAudioManager().getAudioProvider() == null){
-                new DisappearingMessage(getChatChannel(guild), "Audio provider not set. Please try again.", 3000);
-                guild.getAudioManager().setAudioProvider(getMusicManager(guild).getAudioProvider());
-                return;
+            if (!voiceChannel.isConnected()) {
+                voiceChannel.join();
             }
             long timeUntilPlay = getMusicManager(guild).scheduler.getTimeUntilDone();
             getMusicManager(guild).scheduler.queue(track);
@@ -207,11 +200,34 @@ public class MusicPlayer {
     }
 
     /**
+     * If possible, try to begin playing from the track scheduler's queue.
+     */
+    public void playQueue(IGuild guild){
+        IVoiceChannel vc = this.getVoiceChannel(guild);
+        if (!vc.isConnected()){
+            vc.join();
+        }
+        getMusicManager(guild).scheduler.nextTrack();
+    }
+
+    /**
      * Skips the current track.
      */
     public void skipTrack(IGuild guild){
         getMusicManager(guild).scheduler.nextTrack();
         new DisappearingMessage(getChatChannel(guild), "Skipping the current track.", 3000);
+    }
+
+    /**
+     * Stops playback and disconnects from the voice channel, to cease music actions.
+     * @param guild The guild to quit from.
+     */
+    public void quit(IGuild guild){
+        getMusicManager(guild).scheduler.quit();
+        IVoiceChannel vc = this.getVoiceChannel(guild);
+        if (vc.isConnected()){
+            vc.leave();
+        }
     }
 
 }

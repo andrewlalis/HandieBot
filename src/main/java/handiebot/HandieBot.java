@@ -21,7 +21,7 @@ public class HandieBot {
 
     private static final String TOKEN = "MjgzNjUyOTg5MjEyNjg4Mzg0.C45A_Q.506b0G6my1FEFa7_YY39lxLBHUY";
 
-    private static IDiscordClient client;
+    public static IDiscordClient client;
 
     private CommandHandler commandHandler;
     private MusicPlayer musicPlayer;

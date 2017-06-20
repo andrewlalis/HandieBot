@@ -35,10 +35,14 @@ public class CommandHandler {
         String command = extractCommand(message);
         String[] args = extractArgs(message);
         if (guild != null && command != null){
-            DisappearingMessage.deleteMessageAfter(2000, message);
-            if (command.equals("play") && args.length == 1){
+            DisappearingMessage.deleteMessageAfter(1000, message);
+            if (command.equals("play")){
                 //Play or queue a song.
-                this.bot.getMusicPlayer().loadToQueue(guild, args[0]);
+                if (args.length == 1) {
+                    this.bot.getMusicPlayer().loadToQueue(guild, args[0]);
+                } else if (args.length == 0){
+                    this.bot.getMusicPlayer().playQueue(guild);
+                }
             } else if (command.equals("skip") && args.length == 0){
                 //Skip the current song.
                 this.bot.getMusicPlayer().skipTrack(guild);
@@ -53,6 +57,12 @@ public class CommandHandler {
                 //TODO implement repeat command.
             } else if (command.equals("clear")){
                 //TODO clear command.
+            } else if (command.equals("quit")){
+                //Quit the application.
+                channel.sendMessage("Quitting HandieBot functions.");
+                this.bot.getMusicPlayer().quit(guild);
+            } else if (command.equals("playlist")){
+                //Do playlist actions.
             }
         }
     }
