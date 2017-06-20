@@ -63,6 +63,14 @@ public class CommandHandler {
                 this.bot.getMusicPlayer().quit(guild);
             } else if (command.equals("playlist")){
                 //Do playlist actions.
+                //TODO perform actions!
+            } else if (command.equals("prefix") && args.length == 1){
+                //Set the prefix to the first argument.
+                if (args[0].length() != 1){
+                    new DisappearingMessage(channel, "You may only set the prefix to 1 character. To do otherwise is simply foolish.", 3000);
+                } else {
+                    setPrefix(args[0]);
+                }
             }
         }
     }
@@ -121,7 +129,7 @@ public class CommandHandler {
      * Sets the prefix used to identify commands.
      * @param prefix The prefix appended to the beginning of commands.
      */
-    public void setPrefix(String prefix){
+    public static void setPrefix(String prefix){
         PREFIX = prefix;
     }
 
