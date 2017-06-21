@@ -44,8 +44,8 @@
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="104.72807"
-     inkscape:cy="108.47214"
+     inkscape:cx="140.27403"
+     inkscape:cy="113.84621"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -63,7 +63,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -73,13 +73,13 @@
      id="layer1"
      transform="translate(0,-796.36219)">
     <path
-       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:12;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 26.071429,935.93362 C 83.571429,805.57648 182.26443,803.4602 238.57143,935.57647 226.96157,777.68558 38.855639,775.90407 26.071429,935.93362 Z"
        id="path4689"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccc" />
     <ellipse
-       style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:8.58631611;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:12;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path4979"
        cx="223.82457"
        cy="925.21936"
@@ -92,7 +92,8 @@
        id="use4986"
        transform="translate(-181.78571,-4.4666172e-7)"
        width="100%"
-       height="100%" />
+       height="100%"
+       style="stroke-width:12;stroke-miterlimit:4;stroke-dasharray:none" />
     <g
        id="g4981">
       <ellipse
@@ -101,21 +102,7 @@
          cy="936.95587"
          cx="132.5"
          id="path4691"
-         style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#ff6900;stroke-width:5.30872345;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <path
-         sodipodi:nodetypes="cc"
-         inkscape:connector-curvature="0"
-         id="path4695"
-         d="m 78.571429,919.50505 c 0.357143,-21.78572 30.000001,-21.42857 30.357151,0"
-         style="fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:7.99999905;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <use
-         height="100%"
-         width="100%"
-         transform="matrix(-1,0,0,1,260.35717,0.35714286)"
-         id="use4977"
-         xlink:href="#path4695"
-         y="0"
-         x="0" />
+         style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#ff6900;stroke-width:12;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     </g>
   </g>
 </svg>

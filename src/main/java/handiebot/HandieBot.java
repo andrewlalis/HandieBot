@@ -52,7 +52,6 @@ public class HandieBot {
         client = new ClientBuilder().withToken(TOKEN).build();
         client.getDispatcher().registerListener(new HandieBot());
         client.login();
-
     }
 
     /**
