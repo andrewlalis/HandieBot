@@ -13,13 +13,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>
     </build>
     <packaging>jar</packaging>
+
+    <properties>
+        <pastebin4j.version>1.1.0</pastebin4j.version>
+    </properties>
 
     <repositories>
         <repository>
@@ -42,6 +46,11 @@
             <groupId>com.sedmelluq</groupId>
             <artifactId>lavaplayer</artifactId>
             <version>1.2.39</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.kennedyoliveira</groupId>
+            <artifactId>pastebin4j</artifactId>
+            <version>${pastebin4j.version}</version>
         </dependency>
     </dependencies>
 
