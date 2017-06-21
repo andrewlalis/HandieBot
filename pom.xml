@@ -21,6 +21,10 @@
     </build>
     <packaging>jar</packaging>
 
+    <properties>
+        <pastebin4j.version>1.1.0</pastebin4j.version>
+    </properties>
+
     <repositories>
         <repository>
             <id>jcenter</id>
@@ -42,6 +46,11 @@
             <groupId>com.sedmelluq</groupId>
             <artifactId>lavaplayer</artifactId>
             <version>1.2.39</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.kennedyoliveira</groupId>
+            <artifactId>pastebin4j</artifactId>
+            <version>${pastebin4j.version}</version>
         </dependency>
     </dependencies>
 

@@ -31,7 +31,8 @@ import static handiebot.HandieBot.log;
 public class MusicPlayer {
 
     //Name for the message and voice channels dedicated to this bot.
-    public static String CHANNEL_NAME = "HandieBotMusic";
+    static String CHANNEL_NAME = "HandieBotMusic";
+    private static String PASTEBIN_KEY = "769adc01154922ece448cabd7a33b57c";
 
     private final AudioPlayerManager playerManager;
 
@@ -74,7 +75,7 @@ public class MusicPlayer {
      * @param guild The guild to get the channel from.
      * @return A message channel on a particular guild that is specifically for music.
      */
-    private IChannel getChatChannel(IGuild guild){
+    public IChannel getChatChannel(IGuild guild){
         if (!this.chatChannels.containsKey(guild)){
             List<IChannel> channels = guild.getChannelsByName(CHANNEL_NAME.toLowerCase());
             if (channels.isEmpty()){
@@ -93,7 +94,7 @@ public class MusicPlayer {
      * @param guild The guild to get the channel from.
      * @return The voice channel on a guild that is for this bot.
      */
-    private IVoiceChannel getVoiceChannel(IGuild guild){
+    public IVoiceChannel getVoiceChannel(IGuild guild){
         if (!this.voiceChannels.containsKey(guild)){
             List<IVoiceChannel> channels = guild.getVoiceChannelsByName(CHANNEL_NAME);
             if (channels.isEmpty()){
@@ -119,32 +120,56 @@ public class MusicPlayer {
     /**
      * Sends a formatted message to the guild about the first few items in a queue.
      */
-    public void showQueueList(IGuild guild){
+    public void showQueueList(IGuild guild, boolean showAll){
         List<AudioTrack> tracks = getMusicManager(guild).scheduler.queueList();
         if (tracks.size() == 0) {
             new DisappearingMessage(getChatChannel(guild), "The queue is empty. Use **"+ CommandHandler.PREFIX+"play** *URL* to add songs.", 3000);
         } else {
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.withColor(255, 0, 0);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < (tracks.size() <= 10 ? tracks.size() : 10); i++) {
-                sb.append(i+1);
-                sb.append(". ");
-                sb.append('[');
-                sb.append(tracks.get(i).getInfo().title);
-                sb.append("](");
-                sb.append(tracks.get(i).getInfo().uri);
-                sb.append(")");
-                int seconds = (int) (tracks.get(i).getInfo().length/1000);
-                int minutes = seconds / 60;
-                seconds = seconds % 60;
-                String time = String.format(" [%d:%02d]\n", minutes, seconds);
-                sb.append(time);
+            if (!showAll) {
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.withColor(255, 0, 0);
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < (tracks.size() <= 10 ? tracks.size() : 10); i++) {
+                    sb.append(i + 1);
+                    sb.append(". ");
+                    sb.append('[');
+                    sb.append(tracks.get(i).getInfo().title);
+                    sb.append("](");
+                    sb.append(tracks.get(i).getInfo().uri);
+                    sb.append(")");
+                    int seconds = (int) (tracks.get(i).getInfo().length / 1000);
+                    int minutes = seconds / 60;
+                    seconds = seconds % 60;
+                    String time = String.format(" [%d:%02d]\n", minutes, seconds);
+                    sb.append(time);
+                }
+                builder.withTimestamp(System.currentTimeMillis());
+                builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track" + (tracks.size() > 1 ? "s" : "") + ".", sb.toString(), false);
+                IMessage message = getChatChannel(guild).sendMessage(builder.build());
+                DisappearingMessage.deleteMessageAfter(6000, message);
+            } else {
+                StringBuilder sb = new StringBuilder("Queue for Discord Server: "+guild.getName()+"\n");
+                for (int i = 0; i < tracks.size(); i++){
+                    sb.append(i+1).append(". ").append(tracks.get(i).getInfo().title);
+                    int seconds = (int) (tracks.get(i).getInfo().length / 1000);
+                    int minutes = seconds / 60;
+                    seconds = seconds % 60;
+                    String time = String.format(" [%d:%02d]\n", minutes, seconds);
+                    sb.append(time);
+                }
+                //TODO: get pastebin working.
+                /*
+                PasteBin pasteBin = new PasteBin(new AccountCredentials(PASTEBIN_KEY));
+                Paste paste = new Paste(PASTEBIN_KEY);
+                paste.setTitle("Music Queue for Discord Server: "+guild.getName());
+                paste.setContent(sb.toString());
+                paste.setExpiration(PasteExpiration.ONE_HOUR);
+                paste.setVisibility(PasteVisibility.PUBLIC);
+                final String pasteURL = pasteBin.createPaste(paste);
+                log.log(BotLog.TYPE.INFO, guild, "Uploaded full queue to "+pasteURL);
+                new DisappearingMessage(getChatChannel(guild), "You may view the full queue here. "+pasteURL, 60000);
+                */
             }
-            builder.withTimestamp(System.currentTimeMillis());
-            builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track"+(tracks.size() > 1 ? "s" : "")+".", sb.toString(), false);
-            IMessage message = getChatChannel(guild).sendMessage(builder.build());
-            DisappearingMessage.deleteMessageAfter(6000, message);
         }
     }
 
@@ -188,7 +213,7 @@ public class MusicPlayer {
      * Adds a track to the queue and sends a message to the appropriate channel notifying users.
      * @param track The track to queue.
      */
-    public void addToQueue(IGuild guild, AudioTrack track){
+    private void addToQueue(IGuild guild, AudioTrack track){
         IVoiceChannel voiceChannel = getVoiceChannel(guild);
         if (voiceChannel != null){
             if (!voiceChannel.isConnected()) {
@@ -240,10 +265,6 @@ public class MusicPlayer {
      */
     public void quit(IGuild guild){
         getMusicManager(guild).scheduler.quit();
-        IVoiceChannel vc = this.getVoiceChannel(guild);
-        if (vc.isConnected()){
-            vc.leave();
-        }
     }
 
     /**
@@ -252,10 +273,6 @@ public class MusicPlayer {
     public void quitAll(){
         this.musicManagers.forEach((guild, musicManager) -> {
             musicManager.scheduler.quit();
-            IVoiceChannel vc = this.getVoiceChannel(guild);
-            if (vc.isConnected()){
-                vc.leave();
-            }
         });
         this.playerManager.shutdown();
     }

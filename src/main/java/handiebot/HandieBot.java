@@ -8,6 +8,7 @@ import handiebot.view.View;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventSubscriber;
+import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RateLimitException;
@@ -26,17 +27,17 @@ public class HandieBot {
     private static BotWindow window;
     public static BotLog log;
 
-    private CommandHandler commandHandler;
+    private static CommandHandler commandHandler;
     public static MusicPlayer musicPlayer;
-
-    private HandieBot() {
-        this.commandHandler = new CommandHandler(this);
-
-    }
 
     @EventSubscriber
     public void onMessageReceived(MessageReceivedEvent event) {
-        this.commandHandler.handleCommand(event);
+        commandHandler.handleCommand(event);
+    }
+
+    @EventSubscriber
+    public void onReady(ReadyEvent event){
+        log.log(BotLog.TYPE.INFO, "HandieBot initialized.");
     }
 
     public static void main(String[] args) throws DiscordException, RateLimitException {
@@ -47,7 +48,7 @@ public class HandieBot {
         log = new BotLog(view.getOutputArea());
         window = new BotWindow(view);
 
-        log.log(BotLog.TYPE.INFO, "Logging client in.");
+        log.log(BotLog.TYPE.INFO, "Logging client in...");
         client = new ClientBuilder().withToken(TOKEN).build();
         client.getDispatcher().registerListener(new HandieBot());
         client.login();
