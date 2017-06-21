@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import handiebot.command.CommandHandler;
 import handiebot.utils.DisappearingMessage;
+import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
@@ -19,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static handiebot.HandieBot.log;
 
 /**
  * @author Andrew Lalis
@@ -58,7 +61,7 @@ public class MusicPlayer {
      */
     private GuildMusicManager getMusicManager(IGuild guild){
         if (!this.musicManagers.containsKey(guild)){
-            System.out.println("Registering guild, creating audio provider.");
+            log.log(BotLog.TYPE.MUSIC, "Creating new music manager and audio provider for guild: "+guild.getName());
             this.musicManagers.put(guild, new GuildMusicManager(this.playerManager, guild));
             guild.getAudioManager().setAudioProvider(this.musicManagers.get(guild).getAudioProvider());
         }
@@ -75,7 +78,7 @@ public class MusicPlayer {
         if (!this.chatChannels.containsKey(guild)){
             List<IChannel> channels = guild.getChannelsByName(CHANNEL_NAME.toLowerCase());
             if (channels.isEmpty()){
-                System.out.println("Found "+channels.size()+" matches for message channel, creating new one.");
+                log.log(BotLog.TYPE.MUSIC, "No chat channel found, creating a new one.");
                 this.chatChannels.put(guild, guild.createChannel(CHANNEL_NAME.toLowerCase()));
             } else {
                 this.chatChannels.put(guild, channels.get(0));
@@ -94,7 +97,7 @@ public class MusicPlayer {
         if (!this.voiceChannels.containsKey(guild)){
             List<IVoiceChannel> channels = guild.getVoiceChannelsByName(CHANNEL_NAME);
             if (channels.isEmpty()){
-                System.out.println("Found "+channels.size()+" matches for voice channel, creating new one.");
+                log.log(BotLog.TYPE.MUSIC, "No voice channel found, creating a new one.");
                 this.voiceChannels.put(guild, guild.createVoiceChannel(CHANNEL_NAME));
             } else {
                 this.voiceChannels.put(guild, channels.get(0));
@@ -144,7 +147,7 @@ public class MusicPlayer {
         this.playerManager.loadItemOrdered(getMusicManager(guild), trackURL, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack audioTrack) {
-                System.out.println("Track successfully loaded: "+audioTrack.getInfo().title);
+                log.log(BotLog.TYPE.MUSIC, "Track successfully loaded: "+audioTrack.getInfo().title);
                 addToQueue(guild, audioTrack);
             }
 
@@ -185,9 +188,11 @@ public class MusicPlayer {
             getMusicManager(guild).scheduler.queue(track);
             //Build message.
             StringBuilder sb = new StringBuilder();
-            sb.append("Added **").append(track.getInfo().title).append("** to the queue.");
+            if (timeUntilPlay > 0) {
+                sb.append("Added **").append(track.getInfo().title).append("** to the queue.");
+            }
             //If there's some tracks in the queue, get the time until this one plays.
-            if (timeUntilPlay != 0){
+            if (timeUntilPlay > 0){
                 sb.append(String.format("\nTime until play: %d min, %d sec",
                         TimeUnit.MILLISECONDS.toMinutes(timeUntilPlay),
                         TimeUnit.MILLISECONDS.toSeconds(timeUntilPlay) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeUntilPlay))
@@ -215,6 +220,7 @@ public class MusicPlayer {
      */
     public void skipTrack(IGuild guild){
         getMusicManager(guild).scheduler.nextTrack();
+        log.log(BotLog.TYPE.MUSIC, "Skipping the current track. ");
         new DisappearingMessage(getChatChannel(guild), "Skipping the current track.", 3000);
     }
 
@@ -228,6 +234,20 @@ public class MusicPlayer {
         if (vc.isConnected()){
             vc.leave();
         }
+    }
+
+    /**
+     * Performs the same functions as quit, but with every guild.
+     */
+    public void quitAll(){
+        this.musicManagers.forEach((guild, musicManager) -> {
+            musicManager.scheduler.quit();
+            IVoiceChannel vc = this.getVoiceChannel(guild);
+            if (vc.isConnected()){
+                vc.leave();
+            }
+        });
+        this.playerManager.shutdown();
     }
 
 }

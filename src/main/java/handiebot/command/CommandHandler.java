@@ -39,19 +39,19 @@ public class CommandHandler {
             if (command.equals("play")){
                 //Play or queue a song.
                 if (args.length == 1) {
-                    this.bot.getMusicPlayer().loadToQueue(guild, args[0]);
+                    this.bot.musicPlayer.loadToQueue(guild, args[0]);
                 } else if (args.length == 0){
-                    this.bot.getMusicPlayer().playQueue(guild);
+                    this.bot.musicPlayer.playQueue(guild);
                 }
             } else if (command.equals("skip") && args.length == 0){
                 //Skip the current song.
-                this.bot.getMusicPlayer().skipTrack(guild);
+                this.bot.musicPlayer.skipTrack(guild);
             } else if (command.equals("help")){
                 //Send a PM to the user with help info.
                 this.sendHelpInfo(user);//TODO finish the help command and fill in with new descriptions each time.
             } else if (command.equals("queue") && args.length == 0){
                 //Display the first few items of the queue.
-                this.bot.getMusicPlayer().showQueueList(guild);
+                this.bot.musicPlayer.showQueueList(guild);
             } else if (command.equals("repeat")){
                 //Toggle repeat.
                 //TODO implement repeat command.
@@ -60,7 +60,7 @@ public class CommandHandler {
             } else if (command.equals("quit")){
                 //Quit the application.
                 channel.sendMessage("Quitting HandieBot functions.");
-                this.bot.getMusicPlayer().quit(guild);
+                this.bot.musicPlayer.quit(guild);
             } else if (command.equals("playlist")){
                 //Do playlist actions.
                 //TODO perform actions!

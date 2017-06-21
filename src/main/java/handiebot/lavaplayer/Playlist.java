@@ -79,6 +79,9 @@ public class Playlist {
      * @return The AudioTrack that should be played next.
      */
     public AudioTrack getNextTrackAndRemove(boolean shouldShuffle){
+        if (this.tracks.isEmpty()){
+            return null;
+        }
         return this.tracks.remove((shouldShuffle ? getShuffledIndex(this.tracks.size()) : 0));
     }
 
@@ -87,6 +90,9 @@ public class Playlist {
      * @return
      */
     public AudioTrack getNextTrackAndRequeue(boolean shouldShuffle){
+        if (this.tracks.isEmpty()){
+            return null;
+        }
         AudioTrack track = this.tracks.remove((shouldShuffle ? getShuffledIndex(this.tracks.size()) : 0));
         this.tracks.add(track);
         return track;

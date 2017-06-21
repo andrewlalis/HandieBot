@@ -6,7 +6,16 @@ import javax.swing.*;
  * @author Andrew Lalis
  */
 public class View {
-    private JPanel panel1;
-    private JTextArea outputArea;
+    public JPanel mainPanel;
+    private JTextPane outputArea;
     private JTextField commandField;
+
+    public View(){
+        this.commandField.addKeyListener(new CommandLineListener());
+    }
+
+   public JTextPane getOutputArea(){
+       return this.outputArea;
+   }
+
 }

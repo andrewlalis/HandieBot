@@ -5,10 +5,15 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.util.RequestBuffer;
 
 import java.util.List;
+
+import static handiebot.HandieBot.log;
 
 /**
  * @author Andrew Lalis
@@ -100,7 +105,6 @@ public class TrackScheduler extends AudioEventAdapter {
             player.startTrack(track, false);
         } else {
             this.activePlaylist.addTrack(track);
-            this.activePlaylist.save();
         }
     }
 
@@ -109,8 +113,11 @@ public class TrackScheduler extends AudioEventAdapter {
      */
     public void nextTrack(){
         AudioTrack track = (this.repeat ? this.activePlaylist.getNextTrackAndRequeue(this.shuffle) : this.activePlaylist.getNextTrackAndRemove(this.shuffle));
-        this.activePlaylist.save();
-        player.startTrack(track, false);
+        if (track != null) {
+            player.startTrack(track, false);
+        } else {
+            player.stopTrack();
+        }
     }
 
     /**
@@ -118,14 +125,17 @@ public class TrackScheduler extends AudioEventAdapter {
      */
     public void quit(){
         this.player.stopTrack();
+        this.player.destroy();
     }
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        System.out.println("Started audio track: "+track.getInfo().title);
+        log.log(BotLog.TYPE.MUSIC, "Started audio track: "+track.getInfo().title);
         List<IChannel> channels = this.guild.getChannelsByName(MusicPlayer.CHANNEL_NAME.toLowerCase());
         if (channels.size() > 0){
-            channels.get(0).sendMessage("Now playing: **"+track.getInfo().title+"**.");
+            IMessage message = channels.get(0).sendMessage("Now playing: **"+track.getInfo().title+"**.");
+            RequestBuffer.request(() -> {message.addReaction(":thumbsup:");}).get();
+            RequestBuffer.request(() -> {message.addReaction(":thumbsdown:");});
         }
     }
 
@@ -136,6 +146,7 @@ public class TrackScheduler extends AudioEventAdapter {
             System.out.println("Moving to next track.");
             nextTrack();
         } else {
+            log.log(BotLog.TYPE.ERROR, "Unable to go to the next track. Reason: "+endReason.name());
             System.out.println(endReason.toString());
         }
     }
