@@ -1,5 +1,7 @@
 package handiebot.view;
 
+import sx.blah.discord.handle.obj.IGuild;
+
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
@@ -21,10 +23,19 @@ public class BotLog {
     public enum TYPE {
         INFO,
         MUSIC,
-        ERROR
+        ERROR,
+        COMMAND
     }
 
+    //Styles for output to the console.
     private Map<TYPE, Style> logStyles;
+    private static Map<TYPE, Color> logStyleColors = new HashMap<TYPE, Color>(){{
+       put(INFO, new Color(22, 63, 160));
+       put(MUSIC, new Color(51, 175, 66));
+       put(ERROR, new Color(255, 0, 0));
+       put(COMMAND, new Color(255, 123, 0));
+    }};
+
     private Style defaultStyle;
 
     private JTextPane outputArea;
@@ -46,10 +57,8 @@ public class BotLog {
         //Define each type's color.
         for (TYPE type : TYPE.values()) {
             this.logStyles.put(type, outputArea.addStyle(type.name(), this.defaultStyle));
+            this.logStyles.get(type).addAttribute(StyleConstants.Foreground, logStyleColors.get(type));
         }
-        this.logStyles.get(INFO).addAttribute(StyleConstants.Foreground, Color.blue);
-        this.logStyles.get(MUSIC).addAttribute(StyleConstants.Foreground, new Color(51, 175, 66));
-        this.logStyles.get(ERROR).addAttribute(StyleConstants.Foreground, Color.red);
     }
 
     /**
@@ -64,6 +73,26 @@ public class BotLog {
         try {
             this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), dateFormatted, this.defaultStyle);
             this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '['+type.name()+"] ", this.logStyles.get(type));
+            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), message+'\n', this.defaultStyle);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Writes a string to the output window with the given tag, guild name, and text.
+     * @param type The type of message to write.
+     * @param guild The guild to get the name of.
+     * @param message The content of the message.
+     */
+    public void log(TYPE type, IGuild guild, String message){
+        Date date = new Date(System.currentTimeMillis());
+        DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
+        String dateFormatted = formatter.format(date);
+        try {
+            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), dateFormatted, this.defaultStyle);
+            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '['+type.name()+']', this.logStyles.get(type));
+            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '['+guild.getName()+"] ", this.defaultStyle);
             this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), message+'\n', this.defaultStyle);
         } catch (BadLocationException e) {
             e.printStackTrace();

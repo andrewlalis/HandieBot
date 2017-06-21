@@ -39,28 +39,28 @@ public class CommandHandler {
             if (command.equals("play")){
                 //Play or queue a song.
                 if (args.length == 1) {
-                    this.bot.musicPlayer.loadToQueue(guild, args[0]);
+                    HandieBot.musicPlayer.loadToQueue(guild, args[0]);
                 } else if (args.length == 0){
-                    this.bot.musicPlayer.playQueue(guild);
+                    HandieBot.musicPlayer.playQueue(guild);
                 }
             } else if (command.equals("skip") && args.length == 0){
                 //Skip the current song.
-                this.bot.musicPlayer.skipTrack(guild);
+                HandieBot.musicPlayer.skipTrack(guild);
             } else if (command.equals("help")){
                 //Send a PM to the user with help info.
                 this.sendHelpInfo(user);//TODO finish the help command and fill in with new descriptions each time.
             } else if (command.equals("queue") && args.length == 0){
                 //Display the first few items of the queue.
-                this.bot.musicPlayer.showQueueList(guild);
+                HandieBot.musicPlayer.showQueueList(guild);
             } else if (command.equals("repeat")){
                 //Toggle repeat.
-                //TODO implement repeat command.
+                HandieBot.musicPlayer.toggleRepeat(guild);
             } else if (command.equals("clear")){
                 //TODO clear command.
             } else if (command.equals("quit")){
                 //Quit the application.
                 channel.sendMessage("Quitting HandieBot functions.");
-                this.bot.musicPlayer.quit(guild);
+                HandieBot.musicPlayer.quit(guild);
             } else if (command.equals("playlist")){
                 //Do playlist actions.
                 //TODO perform actions!

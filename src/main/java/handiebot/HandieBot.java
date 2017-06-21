@@ -21,9 +21,9 @@ public class HandieBot {
     public static final String APPLICATION_NAME = "HandieBot";
     private static final String TOKEN = "MjgzNjUyOTg5MjEyNjg4Mzg0.C45A_Q.506b0G6my1FEFa7_YY39lxLBHUY";
 
-    public static IDiscordClient client;
+    private static IDiscordClient client;
     public static View view;
-    public static BotWindow window;
+    private static BotWindow window;
     public static BotLog log;
 
     private CommandHandler commandHandler;
@@ -58,10 +58,11 @@ public class HandieBot {
      * Safely shuts down the bot on all guilds.
      */
     public static void quit(){
+        log.log(BotLog.TYPE.INFO, "Shutting down the bot.");
         musicPlayer.quitAll();
         client.logout();
         window.dispose();
-
+        System.exit(0);
     }
 
 }

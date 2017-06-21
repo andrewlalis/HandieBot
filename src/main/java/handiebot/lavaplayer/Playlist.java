@@ -2,10 +2,10 @@ package handiebot.lavaplayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import handiebot.view.BotLog;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -13,6 +13,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+
+import static handiebot.HandieBot.log;
 
 /**
  * @author Andrew Lalis
@@ -24,7 +27,7 @@ public class Playlist {
     private String name;
     private long creatorUID;
 
-    List<AudioTrack> tracks;
+    private List<AudioTrack> tracks;
 
     /**
      * Creates an empty playlist template.
@@ -41,9 +44,9 @@ public class Playlist {
      * Creates a playlist from a file with the given name.
      * @param name The name of the file.
      */
-    public Playlist(String name){
+    public Playlist(String name, AudioPlayerManager playerManager){
         this.name = name;
-        this.load();
+        this.load(playerManager);
     }
 
     public String getName(){
@@ -75,6 +78,15 @@ public class Playlist {
     }
 
     /**
+     * Copies all tracks from a specified playlist to this one.
+     * @param other The other playlist to make a copy of.
+     */
+    public void copyFrom(Playlist other){
+        this.tracks.clear();
+        other.getTracks().forEach(track -> this.tracks.add(track.makeClone()));
+    }
+
+    /**
      * Returns the next track, i.e. the first one in the list, and removes it from the internal list.
      * @return The AudioTrack that should be played next.
      */
@@ -87,7 +99,7 @@ public class Playlist {
 
     /**
      * Returns the next track to be played, and re-adds it to the end of the playlist, as it would do in a loop.
-     * @return
+     * @return The next track to be played.
      */
     public AudioTrack getNextTrackAndRequeue(boolean shouldShuffle){
         if (this.tracks.isEmpty()){
@@ -122,12 +134,12 @@ public class Playlist {
         File playlistDir = new File(homeDir+"/.handiebot/playlist");
         if (!playlistDir.exists()){
             if (!playlistDir.mkdirs()){
-                System.out.println("Unable to make directory: "+playlistDir.getPath());
+                log.log(BotLog.TYPE.ERROR, "Unable to make directory: "+playlistDir.getPath());
                 return;
             }
         }
         File playlistFile = new File(playlistDir.getPath()+"/"+this.name.replace(" ", "_")+".txt");
-        System.out.println("Saving playlist to: "+playlistFile.getAbsolutePath());
+        log.log(BotLog.TYPE.INFO, "Saving playlist to: "+playlistFile.getAbsolutePath());
         try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(playlistFile)))){
             writer.write(this.name+'\n');
             writer.write(Long.toString(this.creatorUID)+'\n');
@@ -137,6 +149,7 @@ public class Playlist {
                 writer.write('\n');
             }
         } catch (FileNotFoundException e) {
+            log.log(BotLog.TYPE.ERROR, "Unable to find file to write playlist: "+this.name);
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -146,8 +159,9 @@ public class Playlist {
     /**
      * Loads the playlist from a file with the playlist's name.
      */
-    public void load(){//TODO Make load work!!!
+    public void load(AudioPlayerManager playerManager){
         String path = System.getProperty("user.home")+"/.handiebot/playlist/"+this.name.replace(" ", "_")+".txt";
+        log.log(BotLog.TYPE.INFO, "Loading playlist from: "+path);
         File playlistFile = new File(path);
         if (playlistFile.exists()){
             try {
@@ -156,20 +170,16 @@ public class Playlist {
                 this.creatorUID = Long.parseLong(lines.remove(0));
                 int trackCount = Integer.parseInt(lines.remove(0));
                 this.tracks = new ArrayList<>(trackCount);
-                AudioPlayerManager pm = new DefaultAudioPlayerManager();
                 for (int i = 0; i < trackCount; i++){
-                    System.out.println("Loading item "+i);
                     String url = lines.remove(0);
-                    pm.loadItem(url, new AudioLoadResultHandler() {
+                    playerManager.loadItem(url, new AudioLoadResultHandler() {
                         @Override
                         public void trackLoaded(AudioTrack audioTrack) {
-                            System.out.println("Added track");
                             tracks.add(audioTrack);
                         }
 
                         @Override
                         public void playlistLoaded(AudioPlaylist audioPlaylist) {
-                            System.out.println("Playlist loaded.");
                             //Do nothing. This should not happen.
                         }
 
@@ -184,9 +194,16 @@ public class Playlist {
                             System.out.println("Load failed: "+e.getMessage());
                             //Do nothing. This should not happen.
                         }
-                    });
+                    }).get();
                 }
             } catch (IOException e) {
+                log.log(BotLog.TYPE.ERROR, "IOException while loading playlist ["+this.name+"]. "+e.getMessage());
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                log.log(BotLog.TYPE.ERROR, "Loading of playlist ["+this.name+"] interrupted. "+e.getMessage());
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                log.log(BotLog.TYPE.ERROR, "Execution exception while loading playlist ["+this.name+"]. "+e.getMessage());
                 e.printStackTrace();
             }
         }

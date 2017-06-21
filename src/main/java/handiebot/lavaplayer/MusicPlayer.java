@@ -61,7 +61,7 @@ public class MusicPlayer {
      */
     private GuildMusicManager getMusicManager(IGuild guild){
         if (!this.musicManagers.containsKey(guild)){
-            log.log(BotLog.TYPE.MUSIC, "Creating new music manager and audio provider for guild: "+guild.getName());
+            log.log(BotLog.TYPE.MUSIC, guild, "Creating new music manager and audio provider for guild: "+guild.getName());
             this.musicManagers.put(guild, new GuildMusicManager(this.playerManager, guild));
             guild.getAudioManager().setAudioProvider(this.musicManagers.get(guild).getAudioProvider());
         }
@@ -78,7 +78,7 @@ public class MusicPlayer {
         if (!this.chatChannels.containsKey(guild)){
             List<IChannel> channels = guild.getChannelsByName(CHANNEL_NAME.toLowerCase());
             if (channels.isEmpty()){
-                log.log(BotLog.TYPE.MUSIC, "No chat channel found, creating a new one.");
+                log.log(BotLog.TYPE.MUSIC, guild, "No chat channel found, creating a new one.");
                 this.chatChannels.put(guild, guild.createChannel(CHANNEL_NAME.toLowerCase()));
             } else {
                 this.chatChannels.put(guild, channels.get(0));
@@ -97,13 +97,23 @@ public class MusicPlayer {
         if (!this.voiceChannels.containsKey(guild)){
             List<IVoiceChannel> channels = guild.getVoiceChannelsByName(CHANNEL_NAME);
             if (channels.isEmpty()){
-                log.log(BotLog.TYPE.MUSIC, "No voice channel found, creating a new one.");
+                log.log(BotLog.TYPE.MUSIC, guild, "No voice channel found, creating a new one.");
                 this.voiceChannels.put(guild, guild.createVoiceChannel(CHANNEL_NAME));
             } else {
                 this.voiceChannels.put(guild, channels.get(0));
             }
         }
         return this.voiceChannels.get(guild);
+    }
+
+    /**
+     * Toggles the repeating of songs for a particular guild.
+     * @param guild The guild to repeat for.
+     */
+    public void toggleRepeat(IGuild guild){
+        GuildMusicManager musicManager = this.getMusicManager(guild);
+
+        musicManager.scheduler.setRepeat(!musicManager.scheduler.isRepeating());
     }
 
     /**
@@ -124,13 +134,12 @@ public class MusicPlayer {
                 sb.append(tracks.get(i).getInfo().title);
                 sb.append("](");
                 sb.append(tracks.get(i).getInfo().uri);
-                sb.append(") [");
+                sb.append(")");
                 int seconds = (int) (tracks.get(i).getInfo().length/1000);
                 int minutes = seconds / 60;
-                sb.append(minutes);
-                sb.append(":");
-                sb.append(seconds % 60);
-                sb.append("]\n");
+                seconds = seconds % 60;
+                String time = String.format(" [%d:%02d]\n", minutes, seconds);
+                sb.append(time);
             }
             builder.withTimestamp(System.currentTimeMillis());
             builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track"+(tracks.size() > 1 ? "s" : "")+".", sb.toString(), false);
@@ -147,7 +156,6 @@ public class MusicPlayer {
         this.playerManager.loadItemOrdered(getMusicManager(guild), trackURL, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack audioTrack) {
-                log.log(BotLog.TYPE.MUSIC, "Track successfully loaded: "+audioTrack.getInfo().title);
                 addToQueue(guild, audioTrack);
             }
 
@@ -164,11 +172,13 @@ public class MusicPlayer {
 
             @Override
             public void noMatches() {
+                log.log(BotLog.TYPE.ERROR, guild, "No matches found for: "+trackURL);
                 new DisappearingMessage(getChatChannel(guild), "Unable to find a result for: "+trackURL, 3000);
             }
 
             @Override
             public void loadFailed(FriendlyException e) {
+                log.log(BotLog.TYPE.ERROR, guild, "Unable to load song: "+trackURL+". "+e.getMessage());
                 new DisappearingMessage(getChatChannel(guild), "Unable to load. "+e.getMessage(), 3000);
             }
         });
@@ -220,7 +230,7 @@ public class MusicPlayer {
      */
     public void skipTrack(IGuild guild){
         getMusicManager(guild).scheduler.nextTrack();
-        log.log(BotLog.TYPE.MUSIC, "Skipping the current track. ");
+        log.log(BotLog.TYPE.MUSIC, guild, "Skipping the current track. ");
         new DisappearingMessage(getChatChannel(guild), "Skipping the current track.", 3000);
     }
 

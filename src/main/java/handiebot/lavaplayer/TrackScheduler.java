@@ -1,6 +1,7 @@
 package handiebot.lavaplayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -24,7 +25,7 @@ public class TrackScheduler extends AudioEventAdapter {
 
     private Playlist activePlaylist;
 
-    private boolean repeat = false;
+    private boolean repeat = true;
     private boolean shuffle = false;
 
     private IGuild guild;
@@ -33,11 +34,11 @@ public class TrackScheduler extends AudioEventAdapter {
      * Constructs a new track scheduler with the given player.
      * @param player The audio player this scheduler uses.
      */
-    public TrackScheduler(AudioPlayer player, IGuild guild){
+    public TrackScheduler(AudioPlayer player, IGuild guild, AudioPlayerManager playerManager){
         this.player = player;
         this.guild = guild;
-        this.activePlaylist = new Playlist("HandieBot Active Playlist", 283652989212688384L);
-        //this.activePlaylist = new Playlist("HandieBot Active Playlist");
+        //this.activePlaylist = new Playlist("HandieBot Active Playlist", 283652989212688384L);
+        this.activePlaylist = new Playlist("HandieBot Active Playlist", playerManager);
     }
 
     /**
@@ -130,7 +131,7 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        log.log(BotLog.TYPE.MUSIC, "Started audio track: "+track.getInfo().title);
+        log.log(BotLog.TYPE.MUSIC, this.guild, "Started audio track: "+track.getInfo().title);
         List<IChannel> channels = this.guild.getChannelsByName(MusicPlayer.CHANNEL_NAME.toLowerCase());
         if (channels.size() > 0){
             IMessage message = channels.get(0).sendMessage("Now playing: **"+track.getInfo().title+"**.");
@@ -146,7 +147,7 @@ public class TrackScheduler extends AudioEventAdapter {
             System.out.println("Moving to next track.");
             nextTrack();
         } else {
-            log.log(BotLog.TYPE.ERROR, "Unable to go to the next track. Reason: "+endReason.name());
+            log.log(BotLog.TYPE.ERROR, this.guild, "Unable to go to the next track. Reason: "+endReason.name());
             System.out.println(endReason.toString());
         }
     }
