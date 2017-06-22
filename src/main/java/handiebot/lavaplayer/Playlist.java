@@ -1,16 +1,17 @@
 package handiebot.lavaplayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import handiebot.HandieBot;
 import handiebot.view.BotLog;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -21,6 +22,8 @@ import static handiebot.HandieBot.log;
  * @author Andrew Lalis
  * A Playlist is a list of AudioTracks which a track scheduler can pull from to create a queue filled with songs. The
  * playlist is persistent, i.e. it is saved into a file.
+ * Be careful, though, as the playlist is not saved in this class, but must be saved manually by whoever is operating
+ * on the playlist.
  */
 public class Playlist {
 
@@ -44,9 +47,9 @@ public class Playlist {
      * Creates a playlist from a file with the given name.
      * @param name The name of the file.
      */
-    public Playlist(String name, AudioPlayerManager playerManager){
+    public Playlist(String name){
         this.name = name;
-        this.load(playerManager);
+        this.load();
     }
 
     public String getName(){
@@ -67,6 +70,44 @@ public class Playlist {
      */
     public void addTrack(AudioTrack track){
         this.tracks.add(track);
+    }
+
+    /**
+     * Attempts to load a track or playlist from a URL, and add it to the tracks list.
+     * @param url The URL to get the song/playlist from.
+     */
+    public void loadTrack(String url){
+        try {
+            HandieBot.musicPlayer.getPlayerManager().loadItem(url, new AudioLoadResultHandler() {
+                @Override
+                public void trackLoaded(AudioTrack audioTrack) {
+                    tracks.add(audioTrack);
+                }
+
+                @Override
+                public void playlistLoaded(AudioPlaylist audioPlaylist) {
+                    tracks.addAll(audioPlaylist.getTracks());
+                }
+
+                @Override
+                public void noMatches() {
+                    log.log(BotLog.TYPE.ERROR, "No matches found for: "+url+".");
+                    //Do nothing. This should not happen.
+                }
+
+                @Override
+                public void loadFailed(FriendlyException e) {
+                    log.log(BotLog.TYPE.ERROR, "Unable to load song from URL: "+url+". "+e.getMessage());
+                    //Do nothing. This should not happen.
+                }
+            }).get();
+        } catch (InterruptedException e) {
+            log.log(BotLog.TYPE.ERROR, "Loading of playlist ["+this.name+"] interrupted. "+e.getMessage());
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            log.log(BotLog.TYPE.ERROR, "Execution exception while loading playlist ["+this.name+"]. "+e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -159,7 +200,7 @@ public class Playlist {
     /**
      * Loads the playlist from a file with the playlist's name.
      */
-    public void load(AudioPlayerManager playerManager){
+    public void load(){
         String path = System.getProperty("user.home")+"/.handiebot/playlist/"+this.name.replace(" ", "_")+".txt";
         log.log(BotLog.TYPE.INFO, "Loading playlist from: "+path);
         File playlistFile = new File(path);
@@ -172,41 +213,41 @@ public class Playlist {
                 this.tracks = new ArrayList<>(trackCount);
                 for (int i = 0; i < trackCount; i++){
                     String url = lines.remove(0);
-                    playerManager.loadItem(url, new AudioLoadResultHandler() {
-                        @Override
-                        public void trackLoaded(AudioTrack audioTrack) {
-                            tracks.add(audioTrack);
-                        }
-
-                        @Override
-                        public void playlistLoaded(AudioPlaylist audioPlaylist) {
-                            //Do nothing. This should not happen.
-                        }
-
-                        @Override
-                        public void noMatches() {
-                            System.out.println("No matches for: "+url);
-                            //Do nothing. This should not happen.
-                        }
-
-                        @Override
-                        public void loadFailed(FriendlyException e) {
-                            System.out.println("Load failed: "+e.getMessage());
-                            //Do nothing. This should not happen.
-                        }
-                    }).get();
+                    loadTrack(url);
                 }
             } catch (IOException e) {
                 log.log(BotLog.TYPE.ERROR, "IOException while loading playlist ["+this.name+"]. "+e.getMessage());
                 e.printStackTrace();
-            } catch (InterruptedException e) {
-                log.log(BotLog.TYPE.ERROR, "Loading of playlist ["+this.name+"] interrupted. "+e.getMessage());
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                log.log(BotLog.TYPE.ERROR, "Execution exception while loading playlist ["+this.name+"]. "+e.getMessage());
-                e.printStackTrace();
+            }
+        } else {
+            log.log(BotLog.TYPE.ERROR, "The playlist ["+this.name+"] does not exist.");
+        }
+    }
+
+    /**
+     * Returns a list of all playlists, or essentially all playlist files.
+     * @return A list of all playlists.
+     */
+    public static List<String> getAvailablePlaylists(){
+        File playlistFolder = new File(System.getProperty("user.home")+"/.handiebot/playlist");
+        List<String> names = new ArrayList<String>(Arrays.asList(playlistFolder.list()));
+        names.forEach(name -> name = name.replace("_", " "));
+        return names;
+    }
+
+    /**
+     * Returns true if a playlist exists.
+     * @param name The name of the playlist.
+     * @return True if the playlist exists.
+     */
+    public static boolean playlistExists(String name){
+        List<String> names = getAvailablePlaylists();
+        for (String n : names){
+            if (n.equals(name)){
+                return true;
             }
         }
+        return false;
     }
 
 }

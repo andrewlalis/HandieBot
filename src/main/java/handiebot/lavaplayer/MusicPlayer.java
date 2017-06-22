@@ -10,12 +10,26 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import handiebot.command.CommandHandler;
 import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 import sx.blah.discord.util.EmbedBuilder;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +67,10 @@ public class MusicPlayer {
         this.musicManagers = new HashMap<>();
         this.chatChannels = new HashMap<>();
         this.voiceChannels = new HashMap<>();
+    }
+
+    public AudioPlayerManager getPlayerManager(){
+        return this.playerManager;
     }
 
     /**
@@ -113,14 +131,40 @@ public class MusicPlayer {
      */
     public void toggleRepeat(IGuild guild){
         GuildMusicManager musicManager = this.getMusicManager(guild);
-
         musicManager.scheduler.setRepeat(!musicManager.scheduler.isRepeating());
+    }
+
+    /**
+     * Sets the repeating of songs for a particular guild.
+     * @param guild The guild to set repeat for.
+     * @param value True to repeat, false otherwise.
+     */
+    public void setRepeat(IGuild guild, boolean value){
+        getMusicManager(guild).scheduler.setRepeat(value);
+    }
+
+    /**
+     * Toggles shuffling for a specific guild.
+     * @param guild The guild to toggle shuffling for.
+     */
+    public void toggleShuffle(IGuild guild){
+        GuildMusicManager musicManager = this.getMusicManager(guild);
+        musicManager.scheduler.setShuffle(!musicManager.scheduler.isShuffling());
+    }
+
+    /**
+     * Sets shuffling for a specific guild.
+     * @param guild The guild to set shuffling for.
+     * @param value The value to set. True for shuffling, false for linear play.
+     */
+    public void setShuffle(IGuild guild, boolean value){
+        getMusicManager(guild).scheduler.setShuffle(value);
     }
 
     /**
      * Sends a formatted message to the guild about the first few items in a queue.
      */
-    public void showQueueList(IGuild guild, boolean showAll){
+    public void showQueueList(IGuild guild, boolean showAll) {
         List<AudioTrack> tracks = getMusicManager(guild).scheduler.queueList();
         if (tracks.size() == 0) {
             new DisappearingMessage(getChatChannel(guild), "The queue is empty. Use **"+ CommandHandler.PREFIX+"play** *URL* to add songs.", 3000);
@@ -157,18 +201,60 @@ public class MusicPlayer {
                     String time = String.format(" [%d:%02d]\n", minutes, seconds);
                     sb.append(time);
                 }
-                //TODO: get pastebin working.
-                /*
-                PasteBin pasteBin = new PasteBin(new AccountCredentials(PASTEBIN_KEY));
-                Paste paste = new Paste(PASTEBIN_KEY);
-                paste.setTitle("Music Queue for Discord Server: "+guild.getName());
-                paste.setContent(sb.toString());
-                paste.setExpiration(PasteExpiration.ONE_HOUR);
-                paste.setVisibility(PasteVisibility.PUBLIC);
-                final String pasteURL = pasteBin.createPaste(paste);
-                log.log(BotLog.TYPE.INFO, guild, "Uploaded full queue to "+pasteURL);
-                new DisappearingMessage(getChatChannel(guild), "You may view the full queue here. "+pasteURL, 60000);
-                */
+
+                HttpClient httpclient = HttpClients.createDefault();
+                HttpPost httppost = new HttpPost("https://www.pastebin.com/api/api_post.php");
+
+                // Request parameters and other properties.
+                List<NameValuePair> params = new ArrayList<NameValuePair>(2);
+                params.add(new BasicNameValuePair("api_dev_key", PASTEBIN_KEY));
+                params.add(new BasicNameValuePair("api_option", "paste"));
+                params.add(new BasicNameValuePair("api_paste_code", sb.toString()));
+                params.add(new BasicNameValuePair("api_paste_private", "0"));
+                params.add(new BasicNameValuePair("api_paste_name", "Music Queue for Discord Server: "+guild.getName()));
+                params.add(new BasicNameValuePair("api_paste_expire_date", "10M"));
+                //params.add(new BasicNameValuePair("api_paste_format", "text"));
+                params.add(new BasicNameValuePair("api_user_key", ""));
+
+                try {
+                    httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+
+                //Execute and get the response.
+                HttpResponse response = null;
+                try {
+                    response = httpclient.execute(httppost);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                HttpEntity entity = response.getEntity();
+
+                if (entity != null) {
+                    InputStream instream = null;
+                    try {
+                        instream = entity.getContent();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        StringWriter writer = new StringWriter();
+                        IOUtils.copy(instream, writer, "UTF-8");
+                        String pasteURL = writer.toString();
+                        log.log(BotLog.TYPE.INFO, guild, "Uploaded full queue to "+pasteURL);
+                        new DisappearingMessage(getChatChannel(guild), "You may view the full queue here. "+pasteURL, 60000);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            instream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
             }
         }
     }

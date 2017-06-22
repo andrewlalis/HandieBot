@@ -1,6 +1,7 @@
 package handiebot.command;
 
 import com.sun.istack.internal.NotNull;
+import handiebot.command.commands.music.PlaylistCommand;
 import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
 import handiebot.view.actions.QuitAction;
@@ -34,6 +35,7 @@ public class CommandHandler {
         IGuild guild = event.getGuild();
         String command = extractCommand(message);
         String[] args = extractArgs(message);
+        CommandContext context = new CommandContext(user, channel, guild, args);
         if (guild != null && command != null){
             DisappearingMessage.deleteMessageAfter(1000, message);
             if (command.equals("play")){
@@ -58,7 +60,7 @@ public class CommandHandler {
                 new QuitAction(guild).actionPerformed(null);
             } else if (command.equals("playlist")){
                 //Do playlist actions.
-                //TODO perform actions!
+                new PlaylistCommand().execute(context);
             } else if (command.equals("prefix") && args.length == 1){
                 //Set the prefix to the first argument.
                 if (args[0].length() != 1){

@@ -1,7 +1,6 @@
 package handiebot.lavaplayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -36,11 +35,11 @@ public class TrackScheduler extends AudioEventAdapter {
      * Constructs a new track scheduler with the given player.
      * @param player The audio player this scheduler uses.
      */
-    public TrackScheduler(AudioPlayer player, IGuild guild, AudioPlayerManager playerManager){
+    public TrackScheduler(AudioPlayer player, IGuild guild){
         this.player = player;
         this.guild = guild;
         //this.activePlaylist = new Playlist("HandieBot Active Playlist", 283652989212688384L);
-        this.activePlaylist = new Playlist("HandieBot Active Playlist", playerManager);
+        this.activePlaylist = new Playlist("HandieBot Active Playlist");
     }
 
     /**

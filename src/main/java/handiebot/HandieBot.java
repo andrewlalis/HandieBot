@@ -16,13 +16,15 @@ import sx.blah.discord.util.RateLimitException;
 /**
  * @author Andrew Lalis
  * Main Class for the discord bot. Contains client loading information and general event processing.
+ * Most variables are static here because this is the main file for the Bot across many possible guilds it could
+ * be runnnig on, so it is no problem to have only one copy.
  */
 public class HandieBot {
 
     public static final String APPLICATION_NAME = "HandieBot";
     private static final String TOKEN = "MjgzNjUyOTg5MjEyNjg4Mzg0.C45A_Q.506b0G6my1FEFa7_YY39lxLBHUY";
 
-    private static IDiscordClient client;
+    public static IDiscordClient client;
     public static View view;
     private static BotWindow window;
     public static BotLog log;
@@ -38,6 +40,7 @@ public class HandieBot {
     @EventSubscriber
     public void onReady(ReadyEvent event){
         log.log(BotLog.TYPE.INFO, "HandieBot initialized.");
+        //client.changeAvatar(Image.forStream("png", getClass().getClassLoader().getResourceAsStream("avatarIcon.png")));
     }
 
     public static void main(String[] args) throws DiscordException, RateLimitException {
