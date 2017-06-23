@@ -1,13 +1,15 @@
 package handiebot.command;
 
 import com.sun.istack.internal.NotNull;
+import handiebot.command.commands.music.PlayCommand;
+import handiebot.command.commands.music.PlaylistCommand;
+import handiebot.command.commands.music.RepeatCommand;
+import handiebot.command.commands.music.ShuffleCommand;
 import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
 import handiebot.view.actions.QuitAction;
-import handiebot.view.actions.music.PlayAction;
 import handiebot.view.actions.music.QueueListAction;
 import handiebot.view.actions.music.SkipAction;
-import handiebot.view.actions.music.ToggleRepeatAction;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.EmbedBuilder;
@@ -34,11 +36,12 @@ public class CommandHandler {
         IGuild guild = event.getGuild();
         String command = extractCommand(message);
         String[] args = extractArgs(message);
+        CommandContext context = new CommandContext(user, channel, guild, args);
         if (guild != null && command != null){
             DisappearingMessage.deleteMessageAfter(1000, message);
             if (command.equals("play")){
                 //Play or queue a song.
-                new PlayAction(guild, args).actionPerformed(null);
+                new PlayCommand().execute(context);
             } else if (command.equals("skip") && args.length == 0){
                 //Skip the current song.
                 new SkipAction(guild).actionPerformed(null);
@@ -48,9 +51,11 @@ public class CommandHandler {
             } else if (command.equals("queue")){
                 //Display the first few items of the queue.
                 new QueueListAction(guild, (args.length == 1) && args[0].equals("all")).actionPerformed(null);
-            } else if (command.equals("repeat")){
+            } else if (command.equals("repeat")) {
                 //Toggle repeat.
-                new ToggleRepeatAction(guild).actionPerformed(null);
+                new RepeatCommand().execute(context);
+            } else if (command.equals("shuffle")){
+                new ShuffleCommand().execute(context);
             } else if (command.equals("clear")){
                 //TODO clear command.
             } else if (command.equals("quit")){
@@ -58,7 +63,7 @@ public class CommandHandler {
                 new QuitAction(guild).actionPerformed(null);
             } else if (command.equals("playlist")){
                 //Do playlist actions.
-                //TODO perform actions!
+                new PlaylistCommand().execute(context);
             } else if (command.equals("prefix") && args.length == 1){
                 //Set the prefix to the first argument.
                 if (args[0].length() != 1){
