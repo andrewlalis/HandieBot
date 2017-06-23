@@ -1,10 +1,6 @@
-package handiebot.lavaplayer;
+package handiebot.lavaplayer.playlist;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import handiebot.HandieBot;
 import handiebot.view.BotLog;
 
 import java.io.*;
@@ -14,13 +10,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 import static handiebot.HandieBot.log;
 
 /**
  * @author Andrew Lalis
- * A Playlist is a list of AudioTracks which a track scheduler can pull from to create a queue filled with songs. The
+ * A Playlist is a list of Tracks which a track scheduler can pull from to create a queue filled with songs. The
  * playlist is persistent, i.e. it is saved into a file.
  * Be careful, though, as the playlist is not saved in this class, but must be saved manually by whoever is operating
  * on the playlist.
@@ -28,48 +23,51 @@ import static handiebot.HandieBot.log;
 public class Playlist {
 
     private String name;
-    private long creatorUID;
 
-    private List<AudioTrack> tracks;
+    private List<UnloadedTrack> tracks;
 
     /**
      * Creates an empty playlist template.
+     * Depending on the circumstances, you may need to call {@code load()} to fill the playlist from a file.
      * @param name The name of the playlist.
-     * @param creatorUID The ID of the user who created it.
-     */
-    public Playlist(String name, long creatorUID){
-        this.name = name;
-        this.creatorUID = creatorUID;
-        this.tracks = new ArrayList<>();
-    }
-
-    /**
-     * Creates a playlist from a file with the given name.
-     * @param name The name of the file.
      */
     public Playlist(String name){
         this.name = name;
-        this.load();
+        this.tracks = new ArrayList<>();
     }
 
-    public String getName(){
+    public String getName() {
         return this.name;
     }
 
-    public long getCreatorUID(){
-        return this.creatorUID;
+    public int getTrackCount(){
+        return this.tracks.size();
     }
 
-    public List<AudioTrack> getTracks(){
+    public List<UnloadedTrack> getTracks(){
         return this.tracks;
     }
 
-    /**
-     * Adds a track to the end of the playlist.
-     * @param track The track to add.
-     */
-    public void addTrack(AudioTrack track){
+    public void addTrack(UnloadedTrack track){
         this.tracks.add(track);
+    }
+
+    public void removeTrack(UnloadedTrack track){
+        this.tracks.remove(track);
+    }
+
+    /**
+     * Loads and returns the audio track that's first on the list.
+     * This removes that track from the playlist.
+     * @param shouldShuffle If this is true, the track returned will be chosen randomly.
+     * @return The AudioTrack corresponding to the next UnloadedTrack in the list.
+     */
+    public AudioTrack loadNextTrack(boolean shouldShuffle){
+        if (shouldShuffle){
+            return this.tracks.remove(getShuffledIndex(this.tracks.size())).loadAudioTrack();
+        } else {
+            return this.tracks.remove(0).loadAudioTrack();
+        }
     }
 
     /**
@@ -78,77 +76,13 @@ public class Playlist {
      */
     public void loadTrack(String url){
         try {
-            HandieBot.musicPlayer.getPlayerManager().loadItem(url, new AudioLoadResultHandler() {
-                @Override
-                public void trackLoaded(AudioTrack audioTrack) {
-                    tracks.add(audioTrack);
-                }
-
-                @Override
-                public void playlistLoaded(AudioPlaylist audioPlaylist) {
-                    tracks.addAll(audioPlaylist.getTracks());
-                }
-
-                @Override
-                public void noMatches() {
-                    log.log(BotLog.TYPE.ERROR, "No matches found for: "+url+".");
-                    //Do nothing. This should not happen.
-                }
-
-                @Override
-                public void loadFailed(FriendlyException e) {
-                    log.log(BotLog.TYPE.ERROR, "Unable to load song from URL: "+url+". "+e.getMessage());
-                    //Do nothing. This should not happen.
-                }
-            }).get();
-        } catch (InterruptedException e) {
-            log.log(BotLog.TYPE.ERROR, "Loading of playlist ["+this.name+"] interrupted. "+e.getMessage());
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            log.log(BotLog.TYPE.ERROR, "Execution exception while loading playlist ["+this.name+"]. "+e.getMessage());
+            UnloadedTrack track = new UnloadedTrack(url);
+            this.tracks.add(track);
+            log.log(BotLog.TYPE.MUSIC, "Added "+track.getTitle()+" to playlist ["+this.name+"].");
+        } catch (Exception e) {
+            log.log(BotLog.TYPE.ERROR, "Unable to add "+url+" to the playlist ["+this.name+"].");
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Removes a track from the playlist.
-     * @param track The track to remove.
-     */
-    public void removeTrack(AudioTrack track){
-        this.tracks.remove(track);
-    }
-
-    /**
-     * Copies all tracks from a specified playlist to this one.
-     * @param other The other playlist to make a copy of.
-     */
-    public void copyFrom(Playlist other){
-        this.tracks.clear();
-        other.getTracks().forEach(track -> this.tracks.add(track.makeClone()));
-    }
-
-    /**
-     * Returns the next track, i.e. the first one in the list, and removes it from the internal list.
-     * @return The AudioTrack that should be played next.
-     */
-    public AudioTrack getNextTrackAndRemove(boolean shouldShuffle){
-        if (this.tracks.isEmpty()){
-            return null;
-        }
-        return this.tracks.remove((shouldShuffle ? getShuffledIndex(this.tracks.size()) : 0));
-    }
-
-    /**
-     * Returns the next track to be played, and re-adds it to the end of the playlist, as it would do in a loop.
-     * @return The next track to be played.
-     */
-    public AudioTrack getNextTrackAndRequeue(boolean shouldShuffle){
-        if (this.tracks.isEmpty()){
-            return null;
-        }
-        AudioTrack track = this.tracks.remove((shouldShuffle ? getShuffledIndex(this.tracks.size()) : 0));
-        this.tracks.add(track);
-        return track;
     }
 
     /**
@@ -182,11 +116,9 @@ public class Playlist {
         File playlistFile = new File(playlistDir.getPath()+"/"+this.name.replace(" ", "_")+".txt");
         log.log(BotLog.TYPE.INFO, "Saving playlist to: "+playlistFile.getAbsolutePath());
         try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(playlistFile)))){
-            writer.write(this.name+'\n');
-            writer.write(Long.toString(this.creatorUID)+'\n');
             writer.write(Integer.toString(this.tracks.size())+'\n');
-            for (AudioTrack track : this.tracks){
-                writer.write(track.getInfo().uri);
+            for (UnloadedTrack track : this.tracks){
+                writer.write(track.toString());
                 writer.write('\n');
             }
         } catch (FileNotFoundException e) {
@@ -201,19 +133,18 @@ public class Playlist {
      * Loads the playlist from a file with the playlist's name.
      */
     public void load(){
-        String path = System.getProperty("user.home")+"/.handiebot/playlist/"+this.name.replace(" ", "_")+".txt";
+        String path = System.getProperty("user.home")+"/.handiebot/playlist/"+name.replace(" ", "_")+".txt";
         log.log(BotLog.TYPE.INFO, "Loading playlist from: "+path);
         File playlistFile = new File(path);
         if (playlistFile.exists()){
             try {
                 List<String> lines = Files.readAllLines(Paths.get(playlistFile.toURI()));
-                this.name = lines.remove(0);
-                this.creatorUID = Long.parseLong(lines.remove(0));
                 int trackCount = Integer.parseInt(lines.remove(0));
+                this.name = name;
                 this.tracks = new ArrayList<>(trackCount);
                 for (int i = 0; i < trackCount; i++){
-                    String url = lines.remove(0);
-                    loadTrack(url);
+                    String[] words = lines.remove(0).split(" / ");
+                    this.tracks.add(new UnloadedTrack(words[0], words[1], Long.parseLong(words[2])));
                 }
             } catch (IOException e) {
                 log.log(BotLog.TYPE.ERROR, "IOException while loading playlist ["+this.name+"]. "+e.getMessage());
@@ -231,7 +162,12 @@ public class Playlist {
     public static List<String> getAvailablePlaylists(){
         File playlistFolder = new File(System.getProperty("user.home")+"/.handiebot/playlist");
         List<String> names = new ArrayList<String>(Arrays.asList(playlistFolder.list()));
-        names.forEach(name -> name = name.replace("_", " "));
+        for (int i = 0; i < names.size(); i++){
+            String name = names.get(i);
+            name = name.replace(".txt", "");
+            name = name.replace("_", " ");
+            names.set(i, name);
+        }
         return names;
     }
 
@@ -248,6 +184,15 @@ public class Playlist {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder("HandieBot Playlist: "+this.getName()+'\n');
+        for (int i = 0; i < this.getTrackCount(); i++){
+            sb.append(i+1).append(". ").append(this.tracks.get(i).getTitle()).append(" ").append(this.tracks.get(i).getFormattedDuration()).append("\n");
+        }
+        return sb.toString();
     }
 
 }

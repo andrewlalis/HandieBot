@@ -43,17 +43,19 @@ Because the play command is defined as `play [URL]`, and the queue command is de
 * `shuffle [true|false]` - Sets the bot to shuffle the playlist, as in pull a random song from the playlist, with some filters to prevent repeating songs.
 
 * `playlist <create|show|play|delete|add|remove|rename>` - Various commands to manipulate playlists. The specific sub-commands are explained below. 
-    * `create <NAME> [URL]...` - Creates a new playlist, optionally with some starting URLs.
+    * `create <PLAYLIST> [URL]...` - Creates a new playlist, optionally with some starting URLs.
     
-    * `delete <NAME>` - Deletes a playlist with the given name.
+    * `delete <PLAYLIST>` - Deletes a playlist with the given name.
        
-    * `show [NAME]` - If a name is given, shows the songs in a given playlist; otherwise it lists the names of the playlists.
+    * `show [PLAYLIST]` - If a name is given, shows the songs in a given playlist; otherwise it lists the names of the playlists.
     
-    * `play <NAME>` - Loads and begins playing the specified playlist.
+    * `play <PLAYLIST>` - Loads and begins playing the specified playlist.
     
-    * `add <NAME> <URL> [URL]...` - Adds the specified URL, or multiple URLs to the playlist given by `NAME`.
+    * `add <PLAYLIST> <URL> [URL]...` - Adds the specified URL, or multiple URLs to the playlist given by `PLAYLIST`.
     
-    * `remove <NAME> <SONGNAME>` - Removes the specified song name, or the one that most closely matches the song name given, from the playlist given by `NAME`.
+    * `remove <PLAYLIST> <SONGNUMBER>` - Removes the specified song name, or the one that most closely matches the song name given, from the playlist given by `PLAYLIST`.
     
-    * `rename <NAME> <NEWNAME>` - Renames the playlist to the new name.
+    * `rename <PLAYLIST> <NEWNAME>` - Renames the playlist to the new name.
+    
+    * `move <PLAYLIST> <SONGNUMBER> <NEWNUMBER>` - Moves a song from one index to another index, shifting other elements as necessary.
     

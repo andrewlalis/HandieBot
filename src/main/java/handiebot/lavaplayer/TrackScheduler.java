@@ -6,6 +6,8 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import handiebot.HandieBot;
+import handiebot.lavaplayer.playlist.Playlist;
+import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
@@ -36,10 +38,23 @@ public class TrackScheduler extends AudioEventAdapter {
      * @param player The audio player this scheduler uses.
      */
     public TrackScheduler(AudioPlayer player, IGuild guild){
+        super();
         this.player = player;
         this.guild = guild;
-        //this.activePlaylist = new Playlist("HandieBot Active Playlist", 283652989212688384L);
         this.activePlaylist = new Playlist("HandieBot Active Playlist");
+        //this.activePlaylist = new Playlist("HandieBot Active Playlist");
+    }
+
+    /**
+     * Fills the playlist with the tracks from a given playlist, or if null,
+     * @param playlist the playlist to load from.
+     */
+    public void setPlaylist(Playlist playlist){
+        this.activePlaylist = playlist;
+    }
+
+    public Playlist getActivePlaylist(){
+        return this.activePlaylist;
     }
 
     /**
@@ -84,7 +99,7 @@ public class TrackScheduler extends AudioEventAdapter {
         if (currentTrack != null){
             t += currentTrack.getDuration() - currentTrack.getPosition();
         }
-        for (AudioTrack track : this.queueList()){
+        for (UnloadedTrack track : this.queueList()){
             t += track.getDuration();
         }
         return t;
@@ -94,7 +109,7 @@ public class TrackScheduler extends AudioEventAdapter {
      * Returns a list of tracks in the queue.
      * @return A list of tracks in the queue.
      */
-    public List<AudioTrack> queueList(){
+    public List<UnloadedTrack> queueList(){
         return this.activePlaylist.getTracks();
     }
 
@@ -102,9 +117,9 @@ public class TrackScheduler extends AudioEventAdapter {
      * Add the next track to the queue or play right away if nothing is in the queue.
      * @param track The track to play or add to the queue.
      */
-    public void queue(AudioTrack track){
+    public void queue(UnloadedTrack track){
         if (player.getPlayingTrack() == null){
-            player.startTrack(track, false);
+            player.startTrack(track.loadAudioTrack(), false);
         } else {
             this.activePlaylist.addTrack(track);
         }
@@ -118,7 +133,7 @@ public class TrackScheduler extends AudioEventAdapter {
         if (currentTrack != null){
             this.player.stopTrack();
         }
-        AudioTrack track = (this.repeat ? this.activePlaylist.getNextTrackAndRequeue(this.shuffle) : this.activePlaylist.getNextTrackAndRemove(this.shuffle));
+        AudioTrack track = this.activePlaylist.loadNextTrack(this.shuffle);
         if (track != null) {
             IVoiceChannel voiceChannel = HandieBot.musicPlayer.getVoiceChannel(this.guild);
             if (!voiceChannel.isConnected()){
@@ -154,6 +169,9 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+        if (this.repeat){
+            this.activePlaylist.addTrack(new UnloadedTrack(track));
+        }
         if (endReason.mayStartNext){
             nextTrack();
         } else {

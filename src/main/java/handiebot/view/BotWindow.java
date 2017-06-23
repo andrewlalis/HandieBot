@@ -2,10 +2,12 @@ package handiebot.view;
 
 import handiebot.HandieBot;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 /**
  * @author Andrew Lalis
@@ -27,6 +29,11 @@ public class BotWindow extends JFrame {
                 }
             }
         });
+        try {
+            setIconImage(ImageIO.read(getClass().getClassLoader().getResourceAsStream("avatarIcon.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         setContentPane(view.mainPanel);
         setJMenuBar(new MenuBar());
         setPreferredSize(new Dimension(800, 600));

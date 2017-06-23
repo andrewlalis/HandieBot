@@ -3,6 +3,10 @@ package handiebot.command.commands.music;
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
+import handiebot.utils.DisappearingMessage;
+import handiebot.view.BotLog;
+
+import static handiebot.HandieBot.log;
 
 /**
  * @author Andrew Lalis
@@ -22,5 +26,7 @@ public class ShuffleCommand extends ContextCommand {
         } else {
             HandieBot.musicPlayer.toggleShuffle(context.getGuild());
         }
+        log.log(BotLog.TYPE.MUSIC, context.getGuild(), "Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.isShuffling()));
+        new DisappearingMessage(context.getChannel(), "Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.isShuffling()), 3000);
     }
 }
