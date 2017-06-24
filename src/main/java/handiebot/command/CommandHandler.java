@@ -1,9 +1,5 @@
 package handiebot.command;
 
-import handiebot.command.commands.HelpCommand;
-import handiebot.command.commands.InfoCommand;
-import handiebot.command.commands.SetPrefixCommand;
-import handiebot.command.commands.music.*;
 import handiebot.utils.DisappearingMessage;
 import handiebot.utils.FileUtil;
 import handiebot.view.BotLog;
@@ -53,38 +49,7 @@ public class CommandHandler {
         CommandContext context = new CommandContext(user, channel, guild, args);
         if (guild != null && command != null){
             DisappearingMessage.deleteMessageAfter(1000, message);
-            switch (command){
-                //Music commands.
-                case ("play"):
-                    new PlayCommand().execute(context);
-                    break;
-                case ("skip"):
-                    new SkipCommand().execute(context);
-                    break;
-                case ("queue"):
-                    new QueueCommand().execute(context);
-                    break;
-                case ("repeat"):
-                    new RepeatCommand().execute(context);
-                    break;
-                case ("shuffle"):
-                    new ShuffleCommand().execute(context);
-                    break;
-                case ("playlist"):
-                    new PlaylistCommand().execute(context);
-                    break;
-                //Other commands.
-                case ("help"):
-                    new HelpCommand().execute(context);
-                    break;
-                case ("info"):
-                    new InfoCommand().execute(context);
-                    break;
-                case ("setprefix"):
-                    new SetPrefixCommand().execute(context);
-                default:
-                    log.log(BotLog.TYPE.ERROR, guild, "Invalid command: "+command+" issued by "+user.getName());
-            }
+            Commands.executeCommand(command, context);
         }
     }
 

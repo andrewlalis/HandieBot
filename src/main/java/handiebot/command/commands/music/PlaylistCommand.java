@@ -126,7 +126,7 @@ public class PlaylistCommand extends ContextCommand {
                 Playlist playlist = new Playlist(context.getArgs()[1]);
                 playlist.load();
                 IMessage message = context.getChannel().sendMessage(playlist.toString());
-                DisappearingMessage.deleteMessageAfter(6000, message);
+                DisappearingMessage.deleteMessageAfter(12000, message);
             } else {
                 new DisappearingMessage(context.getChannel(), "The playlist you specified does not exist.\nUse `"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 5000);
             }
@@ -137,7 +137,7 @@ public class PlaylistCommand extends ContextCommand {
                 sb.append(playlist).append('\n');
             }
             IMessage message = context.getChannel().sendMessage(sb.toString());
-            DisappearingMessage.deleteMessageAfter(6000, message);
+            DisappearingMessage.deleteMessageAfter(12000, message);
         }
     }
 
@@ -228,9 +228,10 @@ public class PlaylistCommand extends ContextCommand {
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
             try{
-                int index = Integer.parseInt(context.getArgs()[2]);
+                int index = Integer.parseInt(context.getArgs()[2]) - 1;
                 UnloadedTrack track = playlist.getTracks().get(index);
                 playlist.removeTrack(track);
+                playlist.save();
                 new DisappearingMessage(context.getChannel(), "Removed song: *"+track.getTitle()+"* from playlist **"+playlist.getName()+"**.", 6000);
                 log.log(BotLog.TYPE.MUSIC, "Removed song: "+track.getTitle()+" from playlist ["+playlist.getName()+"].");
                 DisappearingMessage.deleteMessageAfter(6000, context.getChannel().sendMessage(playlist.toString()));
@@ -266,17 +267,15 @@ public class PlaylistCommand extends ContextCommand {
                 new DisappearingMessage(context.getChannel(), "You must enter two integer values for the song indices.", 5000);
             }
             UnloadedTrack track;
-            if (oldIndex > -1 && oldIndex < playlist.getTrackCount()){
+            if ((oldIndex > -1 && oldIndex < playlist.getTrackCount()) &&
+                    (newIndex > -1 && newIndex <= playlist.getTrackCount())){
                 track = playlist.getTracks().remove(oldIndex);
-                if (newIndex > -1 && newIndex <= playlist.getTrackCount()){
-                    playlist.getTracks().add(newIndex, track);
-                    new DisappearingMessage(context.getChannel(), "Moved song *"+track.getTitle()+"* from position "+(oldIndex+1)+" to position "+(newIndex+1), 6000);
-                    log.log(BotLog.TYPE.MUSIC, "Moved song "+track.getTitle()+" from position "+(oldIndex+1)+" to position "+(newIndex+1));
-                } else {
-                    new DisappearingMessage(context.getChannel(), "The index of the song's new position is invalid. You entered "+newIndex, 5000);
-                }
+                playlist.getTracks().add(newIndex, track);
+                playlist.save();
+                new DisappearingMessage(context.getChannel(), "Moved song *"+track.getTitle()+"* from position "+(oldIndex+1)+" to position "+(newIndex+1), 6000);
+                log.log(BotLog.TYPE.MUSIC, "Moved song "+track.getTitle()+" from position "+(oldIndex+1)+" to position "+(newIndex+1));
             } else {
-                new DisappearingMessage(context.getChannel(), "The index of the song is invalid. You entered "+oldIndex, 5000);
+                new DisappearingMessage(context.getChannel(), "The song indices are invalid. You specified moving song "+oldIndex+" to position "+newIndex+". ", 5000);
             }
         } else {
             new DisappearingMessage(context.getChannel(), "You must provide a playlist name, followed by the song index, and a new index for that song.", 5000);

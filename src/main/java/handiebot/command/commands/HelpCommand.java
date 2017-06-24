@@ -12,7 +12,7 @@ import java.awt.*;
  * Class for sending help/command info to a user if they so desire it.
  */
 public class HelpCommand extends ContextCommand {
-
+//TODO: Finish the help class.
     public HelpCommand() {
         super("help");
     }

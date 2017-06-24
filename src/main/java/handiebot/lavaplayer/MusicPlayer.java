@@ -169,7 +169,7 @@ public class MusicPlayer {
                     sb.append(tracks.get(i).getURL()).append(")");
                     sb.append(tracks.get(i).getFormattedDuration()).append('\n');
                 }
-                builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track" + (tracks.size() > 1 ? "s" : "") + ".", sb.toString(), false);
+                builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track" + (tracks.size() > 1 ? "s" : "") + " out of "+tracks.size()+".", sb.toString(), false);
                 IMessage message = getChatChannel(guild).sendMessage(builder.build());
                 DisappearingMessage.deleteMessageAfter(6000, message);
             }

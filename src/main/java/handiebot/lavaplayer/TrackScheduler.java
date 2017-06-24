@@ -50,11 +50,19 @@ public class TrackScheduler extends AudioEventAdapter {
      * @param playlist the playlist to load from.
      */
     public void setPlaylist(Playlist playlist){
-        this.activePlaylist = playlist;
+        this.activePlaylist.copy(playlist);
     }
 
     public Playlist getActivePlaylist(){
         return this.activePlaylist;
+    }
+
+    /**
+     * Clears the queue.
+     */
+    public void clearQueue(){
+        this.quit();
+        this.activePlaylist.clear();
     }
 
     /**
