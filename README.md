@@ -36,7 +36,7 @@ Because the play command is defined as `play [URL]`, and the queue command is de
 
 * `skip` - If a song is playing, the bot will skip it and play the next song in the queue.
 
-* `queue [all]` - Lists up to the first 10 items on the queue, if no argument is given. If you add `all`, the bot will upload a list to [PasteBin](http://pastebin.com) of the entire queue, and give you 
+* `queue [all]` - Lists up to the first 10 items on the queue, if no argument is given. If you add `all`, the bot will upload a list to [PasteBin](http://pastebin.com) of the entire queue, provided it is greater than 10 elements, and give you a link which expires in 10 minutes.
 
 * `repeat [true|false]` - Sets the bot to repeat the playlist, as in once a song is removed from the queue to be played, it is added back to the end of the playlist.
 

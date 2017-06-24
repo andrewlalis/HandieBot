@@ -174,8 +174,6 @@ public class TrackScheduler extends AudioEventAdapter {
         }
         if (endReason.mayStartNext){
             nextTrack();
-        } else {
-            log.log(BotLog.TYPE.MUSIC, this.guild, "Unable to go to the next track. Reason: "+endReason.name());
         }
     }
 

@@ -86,7 +86,7 @@ public class PlaylistCommand extends ContextCommand {
             }
             playlist.save();
             log.log(BotLog.TYPE.INFO, "Created playlist: "+playlist.getName()+" with "+playlist.getTrackCount()+" new tracks.");
-            new DisappearingMessage(context.getChannel(), "Your playlist *"+playlist.getName()+"* has been created.\nType `"+ CommandHandler.PREFIX+"playlist play "+playlist.getName()+"` to play it.", 5000);
+            new DisappearingMessage(context.getChannel(), "Your playlist *"+playlist.getName()+"* has been created.\nType `"+ CommandHandler.PREFIXES.get(context.getGuild())+"playlist play "+playlist.getName()+"` to play it.", 5000);
         } else {
             new DisappearingMessage(context.getChannel(), "You must specify a name for the new playlist.", 3000);
         }
@@ -109,7 +109,7 @@ public class PlaylistCommand extends ContextCommand {
                     new DisappearingMessage(context.getChannel(), "The playlist was not able to be deleted.", 3000);
                 }
             } else {
-                new DisappearingMessage(context.getChannel(), "The name you entered is not a playlist.\nType `"+CommandHandler.PREFIX+"playlist show` to list the playlists available.", 5000);
+                new DisappearingMessage(context.getChannel(), "The name you entered is not a playlist.\nType `"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to list the playlists available.", 5000);
             }
         } else {
             new DisappearingMessage(context.getChannel(), "You must specify the name of a playlist to delete.", 3000);
@@ -128,7 +128,7 @@ public class PlaylistCommand extends ContextCommand {
                 IMessage message = context.getChannel().sendMessage(playlist.toString());
                 DisappearingMessage.deleteMessageAfter(6000, message);
             } else {
-                new DisappearingMessage(context.getChannel(), "The playlist you specified does not exist.\nUse `"+CommandHandler.PREFIX+"playlist show` to view available playlists.", 5000);
+                new DisappearingMessage(context.getChannel(), "The playlist you specified does not exist.\nUse `"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 5000);
             }
         } else {
             List<String> playlists = Playlist.getAvailablePlaylists();
@@ -163,7 +163,7 @@ public class PlaylistCommand extends ContextCommand {
             DisappearingMessage.deleteMessageAfter(6000, message);
         } else {
             if (context.getArgs().length == 1){
-                new DisappearingMessage(context.getChannel(), "You must provide the name of a playlist to add a URL to.\nUse '"+CommandHandler.PREFIX+"playlist show` to view available playlists.", 5000);
+                new DisappearingMessage(context.getChannel(), "You must provide the name of a playlist to add a URL to.\nUse '"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 5000);
             } else {
                 new DisappearingMessage(context.getChannel(), "You must provide at least one URL to add.", 3000);
             }
@@ -187,7 +187,7 @@ public class PlaylistCommand extends ContextCommand {
             log.log(BotLog.TYPE.INFO, "Loaded playlist ["+playlist.getName()+"].");
             new DisappearingMessage(context.getChannel(), "Now playing from playlist: *"+playlist.getName()+"*.", 6000);
         } else {
-            new DisappearingMessage(context.getChannel(), "You must provide a playlist to play.\nUse '"+CommandHandler.PREFIX+"playlist show` to view available playlists.", 3000);
+            new DisappearingMessage(context.getChannel(), "You must provide a playlist to play.\nUse '"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 3000);
         }
     }
 
@@ -265,7 +265,7 @@ public class PlaylistCommand extends ContextCommand {
             } catch (NumberFormatException e){
                 new DisappearingMessage(context.getChannel(), "You must enter two integer values for the song indices.", 5000);
             }
-            UnloadedTrack track = null;
+            UnloadedTrack track;
             if (oldIndex > -1 && oldIndex < playlist.getTrackCount()){
                 track = playlist.getTracks().remove(oldIndex);
                 if (newIndex > -1 && newIndex <= playlist.getTrackCount()){

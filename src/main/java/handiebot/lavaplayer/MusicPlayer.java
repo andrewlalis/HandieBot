@@ -150,7 +150,7 @@ public class MusicPlayer {
     public void showQueueList(IGuild guild, boolean showAll) {
         List<UnloadedTrack> tracks = getMusicManager(guild).scheduler.queueList();
         if (tracks.size() == 0) {
-            new DisappearingMessage(getChatChannel(guild), "The queue is empty. Use **"+ CommandHandler.PREFIX+"play** *URL* to add songs.", 3000);
+            new DisappearingMessage(getChatChannel(guild), "The queue is empty. Use **"+ CommandHandler.PREFIXES.get(guild)+"play** *URL* to add songs.", 3000);
         } else {
             if (tracks.size() > 10 && showAll) {
                 String result = Pastebin.paste("Current queue for discord server: "+guild.getName()+".", getMusicManager(guild).scheduler.getActivePlaylist().toString());

@@ -15,7 +15,7 @@ public class QueueCommand extends ContextCommand {
 
     @Override
     public void execute(CommandContext context) {
-        HandieBot.musicPlayer.showQueueList(context.getGuild(), (context.getArgs() != null && context.getArgs()[0].equals("all")));
+        HandieBot.musicPlayer.showQueueList(context.getGuild(), (context.getArgs().length == 1 && context.getArgs()[0].equals("all")));
     }
 
 }
