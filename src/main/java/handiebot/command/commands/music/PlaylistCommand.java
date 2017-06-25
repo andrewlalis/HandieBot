@@ -23,7 +23,17 @@ import static handiebot.HandieBot.log;
 public class PlaylistCommand extends ContextCommand {
 
     public PlaylistCommand(){
-        super("playlist");
+        super("playlist",
+                "<create|delete|show|add|remove|rename|move|play> [PLAYLIST]",
+        "Do something with a playlist.\n" +
+                "\t`create <PLAYLIST>` - Creates a playlist.\n" +
+                "\t`delete <PLAYLIST>` - Deletes a playlist.\n" +
+                "\t`show [PLAYLIST]` - If a playlist given, show that, otherwise show a list of playlists.\n" +
+                "\t`add <PLAYLIST> <URL> [URL]...` - Adds one or more songs to a playlist.\n" +
+                "\t`remove <PLAYLIST> <SONGINDEX>` - Removes a song from a playlist.\n" +
+                "\t`rename <PLAYLIST> <NEWNAME>` - Renames a playlist.\n" +
+                "\t`move <PLAYLIST> <OLDINDEX> <NEWINDEX>` - Moves a song from one index to another.\n" +
+                "\t`play <PLAYLIST>` - Queues all songs from a playlist.");
     }
 
     @Override
@@ -69,7 +79,7 @@ public class PlaylistCommand extends ContextCommand {
      * @param channel The channel to show the error message in.
      */
     private void incorrectMainArg(IChannel channel){
-        new DisappearingMessage(channel, "Please use one of the following actions: \n`<create|delete|show|play|add|remove|rename>`", 5000);
+        new DisappearingMessage(channel, "To use the playlist command: \n"+this.getUsage(channel.getGuild()), 5000);
     }
 
     /**
@@ -86,7 +96,7 @@ public class PlaylistCommand extends ContextCommand {
             }
             playlist.save();
             log.log(BotLog.TYPE.INFO, "Created playlist: "+playlist.getName()+" with "+playlist.getTrackCount()+" new tracks.");
-            new DisappearingMessage(context.getChannel(), "Your playlist *"+playlist.getName()+"* has been created.\nType `"+ CommandHandler.PREFIX+"playlist play "+playlist.getName()+"` to play it.", 5000);
+            new DisappearingMessage(context.getChannel(), "Your playlist *"+playlist.getName()+"* has been created.\nType `"+ CommandHandler.PREFIXES.get(context.getGuild())+"playlist play "+playlist.getName()+"` to play it.", 5000);
         } else {
             new DisappearingMessage(context.getChannel(), "You must specify a name for the new playlist.", 3000);
         }
@@ -109,7 +119,7 @@ public class PlaylistCommand extends ContextCommand {
                     new DisappearingMessage(context.getChannel(), "The playlist was not able to be deleted.", 3000);
                 }
             } else {
-                new DisappearingMessage(context.getChannel(), "The name you entered is not a playlist.\nType `"+CommandHandler.PREFIX+"playlist show` to list the playlists available.", 5000);
+                new DisappearingMessage(context.getChannel(), "The name you entered is not a playlist.\nType `"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to list the playlists available.", 5000);
             }
         } else {
             new DisappearingMessage(context.getChannel(), "You must specify the name of a playlist to delete.", 3000);
@@ -126,9 +136,9 @@ public class PlaylistCommand extends ContextCommand {
                 Playlist playlist = new Playlist(context.getArgs()[1]);
                 playlist.load();
                 IMessage message = context.getChannel().sendMessage(playlist.toString());
-                DisappearingMessage.deleteMessageAfter(6000, message);
+                DisappearingMessage.deleteMessageAfter(12000, message);
             } else {
-                new DisappearingMessage(context.getChannel(), "The playlist you specified does not exist.\nUse `"+CommandHandler.PREFIX+"playlist show` to view available playlists.", 5000);
+                new DisappearingMessage(context.getChannel(), "The playlist you specified does not exist.\nUse `"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 5000);
             }
         } else {
             List<String> playlists = Playlist.getAvailablePlaylists();
@@ -137,7 +147,7 @@ public class PlaylistCommand extends ContextCommand {
                 sb.append(playlist).append('\n');
             }
             IMessage message = context.getChannel().sendMessage(sb.toString());
-            DisappearingMessage.deleteMessageAfter(6000, message);
+            DisappearingMessage.deleteMessageAfter(12000, message);
         }
     }
 
@@ -163,7 +173,7 @@ public class PlaylistCommand extends ContextCommand {
             DisappearingMessage.deleteMessageAfter(6000, message);
         } else {
             if (context.getArgs().length == 1){
-                new DisappearingMessage(context.getChannel(), "You must provide the name of a playlist to add a URL to.\nUse '"+CommandHandler.PREFIX+"playlist show` to view available playlists.", 5000);
+                new DisappearingMessage(context.getChannel(), "You must provide the name of a playlist to add a URL to.\nUse '"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 5000);
             } else {
                 new DisappearingMessage(context.getChannel(), "You must provide at least one URL to add.", 3000);
             }
@@ -187,7 +197,7 @@ public class PlaylistCommand extends ContextCommand {
             log.log(BotLog.TYPE.INFO, "Loaded playlist ["+playlist.getName()+"].");
             new DisappearingMessage(context.getChannel(), "Now playing from playlist: *"+playlist.getName()+"*.", 6000);
         } else {
-            new DisappearingMessage(context.getChannel(), "You must provide a playlist to play.\nUse '"+CommandHandler.PREFIX+"playlist show` to view available playlists.", 3000);
+            new DisappearingMessage(context.getChannel(), "You must provide a playlist to play.\nUse '"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 3000);
         }
     }
 
@@ -228,9 +238,10 @@ public class PlaylistCommand extends ContextCommand {
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
             try{
-                int index = Integer.parseInt(context.getArgs()[2]);
+                int index = Integer.parseInt(context.getArgs()[2]) - 1;
                 UnloadedTrack track = playlist.getTracks().get(index);
                 playlist.removeTrack(track);
+                playlist.save();
                 new DisappearingMessage(context.getChannel(), "Removed song: *"+track.getTitle()+"* from playlist **"+playlist.getName()+"**.", 6000);
                 log.log(BotLog.TYPE.MUSIC, "Removed song: "+track.getTitle()+" from playlist ["+playlist.getName()+"].");
                 DisappearingMessage.deleteMessageAfter(6000, context.getChannel().sendMessage(playlist.toString()));
@@ -265,18 +276,16 @@ public class PlaylistCommand extends ContextCommand {
             } catch (NumberFormatException e){
                 new DisappearingMessage(context.getChannel(), "You must enter two integer values for the song indices.", 5000);
             }
-            UnloadedTrack track = null;
-            if (oldIndex > -1 && oldIndex < playlist.getTrackCount()){
+            UnloadedTrack track;
+            if ((oldIndex > -1 && oldIndex < playlist.getTrackCount()) &&
+                    (newIndex > -1 && newIndex <= playlist.getTrackCount())){
                 track = playlist.getTracks().remove(oldIndex);
-                if (newIndex > -1 && newIndex <= playlist.getTrackCount()){
-                    playlist.getTracks().add(newIndex, track);
-                    new DisappearingMessage(context.getChannel(), "Moved song *"+track.getTitle()+"* from position "+(oldIndex+1)+" to position "+(newIndex+1), 6000);
-                    log.log(BotLog.TYPE.MUSIC, "Moved song "+track.getTitle()+" from position "+(oldIndex+1)+" to position "+(newIndex+1));
-                } else {
-                    new DisappearingMessage(context.getChannel(), "The index of the song's new position is invalid. You entered "+newIndex, 5000);
-                }
+                playlist.getTracks().add(newIndex, track);
+                playlist.save();
+                new DisappearingMessage(context.getChannel(), "Moved song *"+track.getTitle()+"* from position "+(oldIndex+1)+" to position "+(newIndex+1), 6000);
+                log.log(BotLog.TYPE.MUSIC, "Moved song "+track.getTitle()+" from position "+(oldIndex+1)+" to position "+(newIndex+1));
             } else {
-                new DisappearingMessage(context.getChannel(), "The index of the song is invalid. You entered "+oldIndex, 5000);
+                new DisappearingMessage(context.getChannel(), "The song indices are invalid. You specified moving song "+oldIndex+" to position "+newIndex+". ", 5000);
             }
         } else {
             new DisappearingMessage(context.getChannel(), "You must provide a playlist name, followed by the song index, and a new index for that song.", 5000);

@@ -3,6 +3,11 @@ package handiebot.command.commands.music;
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
+import handiebot.lavaplayer.playlist.Playlist;
+import handiebot.utils.DisappearingMessage;
+import handiebot.view.BotLog;
+
+import static handiebot.HandieBot.log;
 
 /**
  * @author Andrew Lalis
@@ -10,12 +15,32 @@ import handiebot.command.types.ContextCommand;
  */
 public class QueueCommand extends ContextCommand {
     public QueueCommand() {
-        super("queue");
+        super("queue",
+                "[all|clear|save]",
+                "Shows the first 10 songs in the queue.\n" +
+                        "\t`all` - Shows all songs.\n" +
+                        "\t`clear` - Clears the queue and stops playing.\n" +
+                        "\t`save <PLAYLIST>` - Saves the queue to a playlist.");
     }
 
     @Override
     public void execute(CommandContext context) {
-        HandieBot.musicPlayer.showQueueList(context.getGuild(), (context.getArgs() != null && context.getArgs()[0].equals("all")));
+        if (context.getArgs().length > 0){
+            if (context.getArgs()[0].equals("all")){
+                HandieBot.musicPlayer.showQueueList(context.getGuild(), true);
+            } else if (context.getArgs()[0].equals("clear")){
+                HandieBot.musicPlayer.clearQueue(context.getGuild());
+                log.log(BotLog.TYPE.MUSIC, context.getGuild(), "Cleared queue.");
+            } else if (context.getArgs()[0].equals("save") && context.getArgs().length == 2){
+                Playlist p = HandieBot.musicPlayer.getAllSongsInQueue(context.getGuild());
+                p.setName(context.getArgs()[1]);
+                p.save();
+                new DisappearingMessage(context.getChannel(), "Saved "+p.getTrackCount()+" tracks to playlist **"+p.getName()+"**.", 6000);
+                log.log(BotLog.TYPE.INFO, "Saved queue to playlist ["+p.getName()+"].");
+            }
+        } else {
+            HandieBot.musicPlayer.showQueueList(context.getGuild(), false);
+        }
     }
 
 }

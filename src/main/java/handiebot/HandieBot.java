@@ -1,7 +1,9 @@
 package handiebot;
 
 import handiebot.command.CommandHandler;
+import handiebot.command.types.ReactionHandler;
 import handiebot.lavaplayer.MusicPlayer;
+import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
 import handiebot.view.BotWindow;
 import handiebot.view.View;
@@ -10,6 +12,8 @@ import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.ReactionEvent;
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RateLimitException;
 
@@ -29,17 +33,24 @@ public class HandieBot {
     private static BotWindow window;
     public static BotLog log;
 
-    private static CommandHandler commandHandler;
     public static MusicPlayer musicPlayer;
 
     @EventSubscriber
     public void onMessageReceived(MessageReceivedEvent event) {
-        commandHandler.handleCommand(event);
+        CommandHandler.handleCommand(event);
+    }
+
+    @EventSubscriber
+    public void onReactionReceived(ReactionEvent event){
+        ReactionHandler.handleReaction(event);
     }
 
     @EventSubscriber
     public void onReady(ReadyEvent event){
         log.log(BotLog.TYPE.INFO, "HandieBot initialized.");
+        for (IGuild guild : client.getGuilds()){
+            DisappearingMessage.deleteMessageAfter(5000, musicPlayer.getChatChannel(guild).sendMessage("HandieBot initialized."));
+        }
         //client.changeAvatar(Image.forStream("png", getClass().getClassLoader().getResourceAsStream("avatarIcon.png")));
     }
 

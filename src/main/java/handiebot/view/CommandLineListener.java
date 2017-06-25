@@ -41,7 +41,7 @@ public class CommandLineListener implements KeyListener {
      * @param args The list of arguments for the command.
      */
     private void executeCommand(String command, String[] args){
-        if (command.equals("quit")){
+        if (command.equals("stop")){
             new QuitAction().actionPerformed(null);
         }
     }

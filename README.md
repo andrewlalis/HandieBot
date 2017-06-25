@@ -29,15 +29,30 @@ queue all
 
 Because the play command is defined as `play [URL]`, and the queue command is defined as `queue [all]`.
 
+### General
+
+* `info` - Displays the most common commands, and some basic information about the bot.
+
+* `help` - Sends a private message to whoever issues this command. The message contains an in-depth list of all commands and their proper usage.
+
+* `setprefix <PREFIX>` - Sets the prefix for all commands. Be careful, as some values will cause irreversible damage, if for example, a prefix conflicts with another bot's prefix.
 
 ### Music
 
 * `play [URL]` - Starts playback from the queue, or if a URL is defined, then it will attempt to play that song, or add it to the queue, depending on if a song is already playing. If a song is already playing, you should receive an estimate of when your song should begin playing.
 
+* `stop` - If music is playing, this will stop it.
+
 * `skip` - If a song is playing, the bot will skip it and play the next song in the queue.
 
-* `queue [all]` - Lists up to the first 10 items on the queue, if no argument is given. If you add `all`, the bot will upload a list to [PasteBin](http://pastebin.com) of the entire queue, and give you 
+* `queue [all|clear|save]` - Lists up to the first 10 items on the queue, if no argument is given. 
 
+    * `all` - The bot will upload a list to [PasteBin](http://pastebin.com) of the entire queue, provided it is greater than 10 elements, and give you a link which expires in 10 minutes. 
+    
+    * `clear` - The queue will be cleared and the current song will be stopped.
+    
+    * `save <PLAYLIST>` - The queue will be saved as a playlist with the given name.
+    
 * `repeat [true|false]` - Sets the bot to repeat the playlist, as in once a song is removed from the queue to be played, it is added back to the end of the playlist.
 
 * `shuffle [true|false]` - Sets the bot to shuffle the playlist, as in pull a random song from the playlist, with some filters to prevent repeating songs.

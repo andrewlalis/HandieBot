@@ -40,6 +40,10 @@ public class Playlist {
         return this.name;
     }
 
+    public void setName(String name){
+        this.name = name;
+    }
+
     public int getTrackCount(){
         return this.tracks.size();
     }
@@ -57,12 +61,30 @@ public class Playlist {
     }
 
     /**
+     * Copies all the tracks from another playlist onto this one.
+     * @param playlist A playlist.
+     */
+    public void copy(Playlist playlist){
+        this.getTracks().clear();
+        for (UnloadedTrack track : playlist.getTracks()){
+            this.tracks.add(track.clone());
+        }
+    }
+
+    public void clear(){
+        this.tracks.clear();
+    }
+
+    /**
      * Loads and returns the audio track that's first on the list.
      * This removes that track from the playlist.
      * @param shouldShuffle If this is true, the track returned will be chosen randomly.
      * @return The AudioTrack corresponding to the next UnloadedTrack in the list.
      */
     public AudioTrack loadNextTrack(boolean shouldShuffle){
+        if (this.getTrackCount() == 0){
+            return null;
+        }
         if (shouldShuffle){
             return this.tracks.remove(getShuffledIndex(this.tracks.size())).loadAudioTrack();
         } else {
@@ -188,9 +210,13 @@ public class Playlist {
 
     @Override
     public String toString(){
-        StringBuilder sb = new StringBuilder("HandieBot Playlist: "+this.getName()+'\n');
-        for (int i = 0; i < this.getTrackCount(); i++){
-            sb.append(i+1).append(". ").append(this.tracks.get(i).getTitle()).append(" ").append(this.tracks.get(i).getFormattedDuration()).append("\n");
+        StringBuilder sb = new StringBuilder("Playlist: "+this.getName()+'\n');
+        if (this.getTrackCount() == 0){
+            sb.append("There are no songs in this playlist.");
+        } else {
+            for (int i = 0; i < this.getTrackCount(); i++) {
+                sb.append(i + 1).append(". ").append(this.tracks.get(i).getTitle()).append(" ").append(this.tracks.get(i).getFormattedDuration()).append("\n");
+            }
         }
         return sb.toString();
     }

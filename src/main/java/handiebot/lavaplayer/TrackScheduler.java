@@ -50,11 +50,19 @@ public class TrackScheduler extends AudioEventAdapter {
      * @param playlist the playlist to load from.
      */
     public void setPlaylist(Playlist playlist){
-        this.activePlaylist = playlist;
+        this.activePlaylist.copy(playlist);
     }
 
     public Playlist getActivePlaylist(){
         return this.activePlaylist;
+    }
+
+    /**
+     * Clears the queue.
+     */
+    public void clearQueue(){
+        this.stop();
+        this.activePlaylist.clear();
     }
 
     /**
@@ -106,6 +114,18 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     /**
+     * Returns the currently playing track, in unloaded form.
+     * @return The currently playing track, or null.
+     */
+    public UnloadedTrack getPlayingTrack(){
+        AudioTrack track = this.player.getPlayingTrack();
+        if (track == null){
+            return null;
+        }
+        return new UnloadedTrack(track);
+    }
+
+    /**
      * Returns a list of tracks in the queue.
      * @return A list of tracks in the queue.
      */
@@ -141,19 +161,21 @@ public class TrackScheduler extends AudioEventAdapter {
             }
             player.startTrack(track, false);
         } else {
-            this.quit();
+            this.stop();
         }
     }
 
     /**
-     * If the user wishes to quit, stop the currently played track.
+     * If the user wishes to stop, stop the currently played track.
      */
-    public void quit(){
+    public void stop(){
         IVoiceChannel voiceChannel = HandieBot.musicPlayer.getVoiceChannel(this.guild);
         if (voiceChannel.isConnected()){
             voiceChannel.leave();
         }
-        this.player.stopTrack();
+        if (this.player.getPlayingTrack() != null) {
+            this.player.stopTrack();
+        }
     }
 
     @Override
@@ -161,9 +183,9 @@ public class TrackScheduler extends AudioEventAdapter {
         log.log(BotLog.TYPE.MUSIC, this.guild, "Started audio track: "+track.getInfo().title);
         List<IChannel> channels = this.guild.getChannelsByName(MusicPlayer.CHANNEL_NAME.toLowerCase());
         if (channels.size() > 0){
-            IMessage message = channels.get(0).sendMessage("Now playing: **"+track.getInfo().title+"**\n"+track.getInfo().uri);
+            IMessage message = channels.get(0).sendMessage("Now playing: **"+track.getInfo().title+"** "+new UnloadedTrack(track).getFormattedDuration()+"\n"+track.getInfo().uri);
             RequestBuffer.request(() -> {message.addReaction(":thumbsup:");}).get();
-            RequestBuffer.request(() -> {message.addReaction(":thumbsdown:");});
+            RequestBuffer.request(() -> {message.addReaction(":thumbsdown:");}).get();
         }
     }
 
@@ -174,8 +196,6 @@ public class TrackScheduler extends AudioEventAdapter {
         }
         if (endReason.mayStartNext){
             nextTrack();
-        } else {
-            log.log(BotLog.TYPE.MUSIC, this.guild, "Unable to go to the next track. Reason: "+endReason.name());
         }
     }
 

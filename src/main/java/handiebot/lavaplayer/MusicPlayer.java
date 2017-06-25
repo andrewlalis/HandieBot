@@ -3,7 +3,9 @@ package handiebot.lavaplayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import handiebot.HandieBot;
 import handiebot.command.CommandHandler;
+import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.DisappearingMessage;
 import handiebot.utils.Pastebin;
@@ -25,6 +27,7 @@ import static handiebot.HandieBot.log;
  * @author Andrew Lalis
  * This class is a container for all the music related functions, and contains methods for easy playback and queue
  * management.
+ * The goal is to abstract all functions to this layer, rather than have the bot interact directly with any schedulers.
  */
 public class MusicPlayer {
 
@@ -113,8 +116,7 @@ public class MusicPlayer {
      * @param guild The guild to repeat for.
      */
     public void toggleRepeat(IGuild guild){
-        GuildMusicManager musicManager = this.getMusicManager(guild);
-        musicManager.scheduler.setRepeat(!musicManager.scheduler.isRepeating());
+        setRepeat(guild, !getMusicManager(guild).scheduler.isRepeating());
     }
 
     /**
@@ -124,6 +126,8 @@ public class MusicPlayer {
      */
     public void setRepeat(IGuild guild, boolean value){
         getMusicManager(guild).scheduler.setRepeat(value);
+        log.log(BotLog.TYPE.MUSIC, guild, "Set repeat to "+getMusicManager(guild).scheduler.isRepeating());
+        new DisappearingMessage(getChatChannel(guild), "Set repeat to "+getMusicManager(guild).scheduler.isRepeating(), 3000);
     }
 
     /**
@@ -131,8 +135,7 @@ public class MusicPlayer {
      * @param guild The guild to toggle shuffling for.
      */
     public void toggleShuffle(IGuild guild){
-        GuildMusicManager musicManager = this.getMusicManager(guild);
-        musicManager.scheduler.setShuffle(!musicManager.scheduler.isShuffling());
+        setShuffle(guild, !getMusicManager(guild).scheduler.isShuffling());
     }
 
     /**
@@ -142,6 +145,8 @@ public class MusicPlayer {
      */
     public void setShuffle(IGuild guild, boolean value){
         getMusicManager(guild).scheduler.setShuffle(value);
+        log.log(BotLog.TYPE.MUSIC, guild, "Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(guild).scheduler.isShuffling()));
+        new DisappearingMessage(getChatChannel(guild), "Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(guild).scheduler.isShuffling()), 3000);
     }
 
     /**
@@ -150,7 +155,7 @@ public class MusicPlayer {
     public void showQueueList(IGuild guild, boolean showAll) {
         List<UnloadedTrack> tracks = getMusicManager(guild).scheduler.queueList();
         if (tracks.size() == 0) {
-            new DisappearingMessage(getChatChannel(guild), "The queue is empty. Use **"+ CommandHandler.PREFIX+"play** *URL* to add songs.", 3000);
+            new DisappearingMessage(getChatChannel(guild), "The queue is empty. Use **"+ CommandHandler.PREFIXES.get(guild)+"play** *URL* to add songs.", 3000);
         } else {
             if (tracks.size() > 10 && showAll) {
                 String result = Pastebin.paste("Current queue for discord server: "+guild.getName()+".", getMusicManager(guild).scheduler.getActivePlaylist().toString());
@@ -169,7 +174,7 @@ public class MusicPlayer {
                     sb.append(tracks.get(i).getURL()).append(")");
                     sb.append(tracks.get(i).getFormattedDuration()).append('\n');
                 }
-                builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track" + (tracks.size() > 1 ? "s" : "") + ".", sb.toString(), false);
+                builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track" + (tracks.size() > 1 ? "s" : "") + " out of "+tracks.size()+".", sb.toString(), false);
                 IMessage message = getChatChannel(guild).sendMessage(builder.build());
                 DisappearingMessage.deleteMessageAfter(6000, message);
             }
@@ -200,8 +205,10 @@ public class MusicPlayer {
                         TimeUnit.MILLISECONDS.toSeconds(timeUntilPlay) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeUntilPlay))
                 ));
             }
-            IMessage message = getChatChannel(guild).sendMessage(sb.toString());
-            DisappearingMessage.deleteMessageAfter(3000, message);
+            if (sb.length() > 0) {
+                IMessage message = getChatChannel(guild).sendMessage(sb.toString());
+                DisappearingMessage.deleteMessageAfter(3000, message);
+            }
         }
 
     }
@@ -217,6 +224,11 @@ public class MusicPlayer {
         getMusicManager(guild).scheduler.nextTrack();
     }
 
+    public void clearQueue(IGuild guild){
+        getMusicManager(guild).scheduler.clearQueue();
+        new DisappearingMessage(getChatChannel(guild), "Cleared the queue.", 5000);
+    }
+
     /**
      * Skips the current track.
      */
@@ -228,18 +240,36 @@ public class MusicPlayer {
 
     /**
      * Stops playback and disconnects from the voice channel, to cease music actions.
-     * @param guild The guild to quit from.
+     * @param guild The guild to stop from.
      */
-    public void quit(IGuild guild){
-        getMusicManager(guild).scheduler.quit();
+    public void stop(IGuild guild){
+        getMusicManager(guild).scheduler.stop();
+        new DisappearingMessage(getChatChannel(guild), "Stopped playing music.", 5000);
+        log.log(BotLog.TYPE.MUSIC, guild, "Stopped playing music.");
     }
 
     /**
-     * Performs the same functions as quit, but with every guild.
+     * Returns a playlist of all songs either in the queue or being played now.
+     * @param guild The guild to get songs from.
+     * @return A list of songs in the form of a playlist.
+     */
+    public Playlist getAllSongsInQueue(IGuild guild){
+        GuildMusicManager musicManager = getMusicManager(guild);
+        Playlist p = new Playlist("Active Queue");
+        p.copy(musicManager.scheduler.getActivePlaylist());
+        UnloadedTrack track = musicManager.scheduler.getPlayingTrack();
+        if (track != null){
+            p.addTrack(track);
+        }
+        return p;
+    }
+
+    /**
+     * Performs the same functions as stop, but with every guild.
      */
     public void quitAll(){
         this.musicManagers.forEach((guild, musicManager) -> {
-            musicManager.scheduler.quit();
+            musicManager.scheduler.stop();
         });
         this.playerManager.shutdown();
     }
