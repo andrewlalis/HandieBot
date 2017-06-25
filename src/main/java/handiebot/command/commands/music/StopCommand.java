@@ -6,19 +6,18 @@ import handiebot.command.types.ContextCommand;
 
 /**
  * @author Andrew Lalis
- * Skips the current song, if there is one playing.
+ * Command to stop playback of music on a server.
  */
-public class SkipCommand extends ContextCommand {
+public class StopCommand extends ContextCommand {
 
-    public SkipCommand() {
-        super("skip",
+    public StopCommand(){
+        super("stop",
                 "",
-                "Skips the current song.");
+                "Stops playing music.");
     }
 
     @Override
     public void execute(CommandContext context) {
-        HandieBot.musicPlayer.skipTrack(context.getGuild());
+        HandieBot.musicPlayer.stop(context.getGuild());
     }
-
 }

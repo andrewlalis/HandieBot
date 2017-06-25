@@ -24,6 +24,7 @@ public class Commands {
     static {
         //Music commands.
         commands.add(new PlayCommand());
+        commands.add(new StopCommand());
         commands.add(new QueueCommand());
         commands.add(new SkipCommand());
         commands.add(new RepeatCommand());
@@ -49,6 +50,20 @@ public class Commands {
             }
         }
         log.log(BotLog.TYPE.ERROR, context.getGuild(), "Invalid command: "+command+" issued by "+context.getUser().getName());
+    }
+
+    /**
+     * Attempts to get a command object, given the name of a command.
+     * @param command The name of the command to get.
+     * @return Either a command, or null.
+     */
+    public Command get(String command){
+        for (Command cmd : commands){
+            if (cmd.getName().equals(command)){
+                return cmd;
+            }
+        }
+        return null;
     }
 
 }

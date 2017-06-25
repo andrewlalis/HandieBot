@@ -13,7 +13,9 @@ import handiebot.utils.DisappearingMessage;
 public class PlayCommand extends ContextCommand {
 
     public PlayCommand() {
-        super("play");
+        super("play",
+                "[URL]",
+                "Plays a song, or adds it to the queue.");
     }
 
     @Override

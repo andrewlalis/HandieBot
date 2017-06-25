@@ -15,7 +15,9 @@ import static handiebot.HandieBot.log;
 public class SetPrefixCommand extends ContextCommand {
 
     public SetPrefixCommand() {
-        super("setprefix");
+        super("setprefix",
+                "<PREFIX>",
+                "Sets the prefix for commands.");
     }
 
     @Override

@@ -29,10 +29,19 @@ queue all
 
 Because the play command is defined as `play [URL]`, and the queue command is defined as `queue [all]`.
 
+### General
+
+* `info` - Displays the most common commands, and some basic information about the bot.
+
+* `help` - Sends a private message to whoever issues this command. The message contains an in-depth list of all commands and their proper usage.
+
+* `setprefix <PREFIX>` - Sets the prefix for all commands. Be careful, as some values will cause irreversible damage, if for example, a prefix conflicts with another bot's prefix.
 
 ### Music
 
 * `play [URL]` - Starts playback from the queue, or if a URL is defined, then it will attempt to play that song, or add it to the queue, depending on if a song is already playing. If a song is already playing, you should receive an estimate of when your song should begin playing.
+
+* `stop` - If music is playing, this will stop it.
 
 * `skip` - If a song is playing, the bot will skip it and play the next song in the queue.
 

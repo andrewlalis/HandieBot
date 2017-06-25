@@ -61,7 +61,7 @@ public class TrackScheduler extends AudioEventAdapter {
      * Clears the queue.
      */
     public void clearQueue(){
-        this.quit();
+        this.stop();
         this.activePlaylist.clear();
     }
 
@@ -149,19 +149,21 @@ public class TrackScheduler extends AudioEventAdapter {
             }
             player.startTrack(track, false);
         } else {
-            this.quit();
+            this.stop();
         }
     }
 
     /**
-     * If the user wishes to quit, stop the currently played track.
+     * If the user wishes to stop, stop the currently played track.
      */
-    public void quit(){
+    public void stop(){
         IVoiceChannel voiceChannel = HandieBot.musicPlayer.getVoiceChannel(this.guild);
         if (voiceChannel.isConnected()){
             voiceChannel.leave();
         }
-        this.player.stopTrack();
+        if (this.player.getPlayingTrack() != null) {
+            this.player.stopTrack();
+        }
     }
 
     @Override

@@ -23,7 +23,17 @@ import static handiebot.HandieBot.log;
 public class PlaylistCommand extends ContextCommand {
 
     public PlaylistCommand(){
-        super("playlist");
+        super("playlist",
+                "<create|delete|show|add|remove|rename|move|play> [PLAYLIST]",
+        "Do something with a playlist.\n" +
+                "\tcreate - Creates a playlist.\n" +
+                "\tdelete - Deletes a playlist.\n" +
+                "\tshow [PLAYLIST] - If a playlist given, show that, otherwise show a list of playlists.\n" +
+                "\tadd <PLAYLIST> <URL> [URL]... - Adds one or more songs to a playlist.\n" +
+                "\tremove <PLAYLIST> <SONGINDEX> - Removes a song from a playlist.\n" +
+                "\trename <PLAYLIST> <NEWNAME> - Renames a playlist.\n" +
+                "\tmove <PLAYLIST> <OLDINDEX> <NEWINDEX> - Moves a song from one index to another.\n" +
+                "\tplay <PLAYLIST> - Queues all songs from a playlist.");
     }
 
     @Override
@@ -69,7 +79,7 @@ public class PlaylistCommand extends ContextCommand {
      * @param channel The channel to show the error message in.
      */
     private void incorrectMainArg(IChannel channel){
-        new DisappearingMessage(channel, "Please use one of the following actions: \n`<create|delete|show|play|add|remove|rename>`", 5000);
+        new DisappearingMessage(channel, "To use the playlist command: \n"+this.getUsage(channel.getGuild()), 5000);
     }
 
     /**

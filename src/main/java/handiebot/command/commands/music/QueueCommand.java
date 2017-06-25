@@ -3,7 +3,6 @@ package handiebot.command.commands.music;
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
-import handiebot.utils.DisappearingMessage;
 
 /**
  * @author Andrew Lalis
@@ -11,7 +10,11 @@ import handiebot.utils.DisappearingMessage;
  */
 public class QueueCommand extends ContextCommand {
     public QueueCommand() {
-        super("queue");
+        super("queue",
+                "[all|clear]",
+                "Shows the first 10 songs in the queue.\n" +
+                        "\tall - Shows all songs.\n" +
+                        "\tclear - Clears the queue and stops playing.");
     }
 
     @Override
@@ -20,8 +23,7 @@ public class QueueCommand extends ContextCommand {
             if (context.getArgs()[0].equals("all")){
                 HandieBot.musicPlayer.showQueueList(context.getGuild(), true);
             } else if (context.getArgs()[0].equals("clear")){
-                HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.clearQueue();
-                new DisappearingMessage(context.getChannel(), "Cleared the queue.", 5000);
+                HandieBot.musicPlayer.clearQueue(context.getGuild());
             }
         } else {
             HandieBot.musicPlayer.showQueueList(context.getGuild(), false);

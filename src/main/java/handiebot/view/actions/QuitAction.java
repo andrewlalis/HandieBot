@@ -24,7 +24,7 @@ public class QuitAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (guild != null){
             HandieBot.musicPlayer.getChatChannel(this.guild).sendMessage("Quiting HandieBot");
-            HandieBot.musicPlayer.quit(this.guild);
+            HandieBot.musicPlayer.stop(this.guild);
         } else {
             HandieBot.quit();
         }

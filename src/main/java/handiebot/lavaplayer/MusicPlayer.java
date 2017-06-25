@@ -3,6 +3,7 @@ package handiebot.lavaplayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import handiebot.HandieBot;
 import handiebot.command.CommandHandler;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.DisappearingMessage;
@@ -25,6 +26,7 @@ import static handiebot.HandieBot.log;
  * @author Andrew Lalis
  * This class is a container for all the music related functions, and contains methods for easy playback and queue
  * management.
+ * The goal is to abstract all functions to this layer, rather than have the bot interact directly with any schedulers.
  */
 public class MusicPlayer {
 
@@ -113,8 +115,7 @@ public class MusicPlayer {
      * @param guild The guild to repeat for.
      */
     public void toggleRepeat(IGuild guild){
-        GuildMusicManager musicManager = this.getMusicManager(guild);
-        musicManager.scheduler.setRepeat(!musicManager.scheduler.isRepeating());
+        setRepeat(guild, !getMusicManager(guild).scheduler.isRepeating());
     }
 
     /**
@@ -124,6 +125,8 @@ public class MusicPlayer {
      */
     public void setRepeat(IGuild guild, boolean value){
         getMusicManager(guild).scheduler.setRepeat(value);
+        log.log(BotLog.TYPE.MUSIC, guild, "Set repeat to "+getMusicManager(guild).scheduler.isRepeating());
+        new DisappearingMessage(getChatChannel(guild), "Set repeat to "+getMusicManager(guild).scheduler.isRepeating(), 3000);
     }
 
     /**
@@ -131,8 +134,7 @@ public class MusicPlayer {
      * @param guild The guild to toggle shuffling for.
      */
     public void toggleShuffle(IGuild guild){
-        GuildMusicManager musicManager = this.getMusicManager(guild);
-        musicManager.scheduler.setShuffle(!musicManager.scheduler.isShuffling());
+        setShuffle(guild, !getMusicManager(guild).scheduler.isShuffling());
     }
 
     /**
@@ -142,6 +144,8 @@ public class MusicPlayer {
      */
     public void setShuffle(IGuild guild, boolean value){
         getMusicManager(guild).scheduler.setShuffle(value);
+        log.log(BotLog.TYPE.MUSIC, guild, "Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(guild).scheduler.isShuffling()));
+        new DisappearingMessage(getChatChannel(guild), "Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(guild).scheduler.isShuffling()), 3000);
     }
 
     /**
@@ -217,6 +221,11 @@ public class MusicPlayer {
         getMusicManager(guild).scheduler.nextTrack();
     }
 
+    public void clearQueue(IGuild guild){
+        getMusicManager(guild).scheduler.clearQueue();
+        new DisappearingMessage(getChatChannel(guild), "Cleared the queue.", 5000);
+    }
+
     /**
      * Skips the current track.
      */
@@ -228,18 +237,20 @@ public class MusicPlayer {
 
     /**
      * Stops playback and disconnects from the voice channel, to cease music actions.
-     * @param guild The guild to quit from.
+     * @param guild The guild to stop from.
      */
-    public void quit(IGuild guild){
-        getMusicManager(guild).scheduler.quit();
+    public void stop(IGuild guild){
+        getMusicManager(guild).scheduler.stop();
+        new DisappearingMessage(getChatChannel(guild), "Stopped playing music.", 5000);
+        log.log(BotLog.TYPE.MUSIC, guild, "Stopped playing music.");
     }
 
     /**
-     * Performs the same functions as quit, but with every guild.
+     * Performs the same functions as stop, but with every guild.
      */
     public void quitAll(){
         this.musicManagers.forEach((guild, musicManager) -> {
-            musicManager.scheduler.quit();
+            musicManager.scheduler.stop();
         });
         this.playerManager.shutdown();
     }
