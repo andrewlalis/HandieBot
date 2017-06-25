@@ -5,9 +5,6 @@ import handiebot.command.Commands;
 import handiebot.command.types.Command;
 import handiebot.command.types.ContextCommand;
 import sx.blah.discord.handle.obj.IPrivateChannel;
-import sx.blah.discord.util.EmbedBuilder;
-
-import java.awt.*;
 
 /**
  * @author Andrew Lalis
@@ -24,30 +21,25 @@ public class HelpCommand extends ContextCommand {
     @Override
     public void execute(CommandContext context) {
         IPrivateChannel pm = context.getUser().getOrCreatePMChannel();
-        EmbedBuilder builder = new EmbedBuilder();
 
-        builder.withAuthorName("HandieBot");
-        builder.withAuthorUrl("https://github.com/andrewlalis/HandieBot");
-        builder.withAuthorIcon("https://github.com/andrewlalis/HandieBot/blob/master/src/main/resources/icon.png");
-
-        builder.withColor(new Color(255, 0, 0));
-        builder.withDescription("I'm a discord bot that can manage music, as well as some other important functions which will be implemented later on. Some commands are shown below.");
-
-        //Music Commands:
-
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder("HandieBot Commands:\n");
         for (Command cmd : Commands.commands){
-            sb.append('`');
+            StringBuilder commandText = new StringBuilder();
+            commandText.append("- `");
             if (cmd instanceof ContextCommand){
-                sb.append(((ContextCommand)cmd).getUsage(context.getGuild()));
+                commandText.append(((ContextCommand)cmd).getUsage(context.getGuild()));
             } else {
-                sb.append(cmd.getUsage());
+                commandText.append(cmd.getUsage());
             }
-            sb.append("`\n").append(cmd.getDescription()).append('\n');
+            commandText.append("`\n").append(cmd.getDescription()).append("\n\n");
+            if (sb.length() + commandText.length() > 2000){
+                pm.sendMessage(sb.toString());
+                sb = commandText;
+            } else {
+                sb.append(commandText);
+            }
         }
 
-        builder.appendField("Commands:", sb.toString(), false);
-
-        pm.sendMessage(builder.build());
+        pm.sendMessage(sb.toString());
     }
 }

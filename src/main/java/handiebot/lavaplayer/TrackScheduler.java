@@ -114,6 +114,18 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     /**
+     * Returns the currently playing track, in unloaded form.
+     * @return The currently playing track, or null.
+     */
+    public UnloadedTrack getPlayingTrack(){
+        AudioTrack track = this.player.getPlayingTrack();
+        if (track == null){
+            return null;
+        }
+        return new UnloadedTrack(track);
+    }
+
+    /**
      * Returns a list of tracks in the queue.
      * @return A list of tracks in the queue.
      */
@@ -171,9 +183,9 @@ public class TrackScheduler extends AudioEventAdapter {
         log.log(BotLog.TYPE.MUSIC, this.guild, "Started audio track: "+track.getInfo().title);
         List<IChannel> channels = this.guild.getChannelsByName(MusicPlayer.CHANNEL_NAME.toLowerCase());
         if (channels.size() > 0){
-            IMessage message = channels.get(0).sendMessage("Now playing: **"+track.getInfo().title+"**\n"+track.getInfo().uri);
+            IMessage message = channels.get(0).sendMessage("Now playing: **"+track.getInfo().title+"** "+new UnloadedTrack(track).getFormattedDuration()+"\n"+track.getInfo().uri);
             RequestBuffer.request(() -> {message.addReaction(":thumbsup:");}).get();
-            RequestBuffer.request(() -> {message.addReaction(":thumbsdown:");});
+            RequestBuffer.request(() -> {message.addReaction(":thumbsdown:");}).get();
         }
     }
 

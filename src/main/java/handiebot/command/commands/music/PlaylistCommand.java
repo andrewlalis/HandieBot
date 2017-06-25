@@ -26,14 +26,14 @@ public class PlaylistCommand extends ContextCommand {
         super("playlist",
                 "<create|delete|show|add|remove|rename|move|play> [PLAYLIST]",
         "Do something with a playlist.\n" +
-                "\tcreate - Creates a playlist.\n" +
-                "\tdelete - Deletes a playlist.\n" +
-                "\tshow [PLAYLIST] - If a playlist given, show that, otherwise show a list of playlists.\n" +
-                "\tadd <PLAYLIST> <URL> [URL]... - Adds one or more songs to a playlist.\n" +
-                "\tremove <PLAYLIST> <SONGINDEX> - Removes a song from a playlist.\n" +
-                "\trename <PLAYLIST> <NEWNAME> - Renames a playlist.\n" +
-                "\tmove <PLAYLIST> <OLDINDEX> <NEWINDEX> - Moves a song from one index to another.\n" +
-                "\tplay <PLAYLIST> - Queues all songs from a playlist.");
+                "\t`create <PLAYLIST>` - Creates a playlist.\n" +
+                "\t`delete <PLAYLIST>` - Deletes a playlist.\n" +
+                "\t`show [PLAYLIST]` - If a playlist given, show that, otherwise show a list of playlists.\n" +
+                "\t`add <PLAYLIST> <URL> [URL]...` - Adds one or more songs to a playlist.\n" +
+                "\t`remove <PLAYLIST> <SONGINDEX>` - Removes a song from a playlist.\n" +
+                "\t`rename <PLAYLIST> <NEWNAME>` - Renames a playlist.\n" +
+                "\t`move <PLAYLIST> <OLDINDEX> <NEWINDEX>` - Moves a song from one index to another.\n" +
+                "\t`play <PLAYLIST>` - Queues all songs from a playlist.");
     }
 
     @Override

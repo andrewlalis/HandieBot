@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import handiebot.HandieBot;
 import handiebot.command.CommandHandler;
+import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.DisappearingMessage;
 import handiebot.utils.Pastebin;
@@ -204,8 +205,10 @@ public class MusicPlayer {
                         TimeUnit.MILLISECONDS.toSeconds(timeUntilPlay) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeUntilPlay))
                 ));
             }
-            IMessage message = getChatChannel(guild).sendMessage(sb.toString());
-            DisappearingMessage.deleteMessageAfter(3000, message);
+            if (sb.length() > 0) {
+                IMessage message = getChatChannel(guild).sendMessage(sb.toString());
+                DisappearingMessage.deleteMessageAfter(3000, message);
+            }
         }
 
     }
@@ -243,6 +246,22 @@ public class MusicPlayer {
         getMusicManager(guild).scheduler.stop();
         new DisappearingMessage(getChatChannel(guild), "Stopped playing music.", 5000);
         log.log(BotLog.TYPE.MUSIC, guild, "Stopped playing music.");
+    }
+
+    /**
+     * Returns a playlist of all songs either in the queue or being played now.
+     * @param guild The guild to get songs from.
+     * @return A list of songs in the form of a playlist.
+     */
+    public Playlist getAllSongsInQueue(IGuild guild){
+        GuildMusicManager musicManager = getMusicManager(guild);
+        Playlist p = new Playlist("Active Queue");
+        p.copy(musicManager.scheduler.getActivePlaylist());
+        UnloadedTrack track = musicManager.scheduler.getPlayingTrack();
+        if (track != null){
+            p.addTrack(track);
+        }
+        return p;
     }
 
     /**
