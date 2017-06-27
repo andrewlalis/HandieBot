@@ -13,7 +13,8 @@ public class ShuffleCommand extends ContextCommand {
     public ShuffleCommand(){
         super("shuffle",
                 "[true|false]",
-                "Sets shuffling.");
+                "Sets shuffling.",
+                8);
     }
 
     @Override

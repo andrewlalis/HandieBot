@@ -1,4 +1,4 @@
-package handiebot.command.types;
+package handiebot.command;
 
 import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.ReactionEvent;
 

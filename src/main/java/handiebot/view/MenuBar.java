@@ -1,7 +1,8 @@
 package handiebot.view;
 
+import handiebot.command.Commands;
 import handiebot.view.actions.ActionItem;
-import handiebot.view.actions.QuitAction;
+import handiebot.view.actions.CommandAction;
 
 import javax.swing.*;
 
@@ -13,7 +14,7 @@ public class MenuBar extends JMenuBar {
 
     public MenuBar(){
         JMenu fileMenu = new JMenu("File");
-            fileMenu.add(new ActionItem("Quit", new QuitAction()));
+            fileMenu.add(new ActionItem("Quit", new CommandAction(Commands.get("quit"))));
             this.add(fileMenu);
     }
 

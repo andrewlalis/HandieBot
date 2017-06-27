@@ -10,8 +10,8 @@ import sx.blah.discord.handle.obj.IGuild;
  */
 public abstract class ContextCommand extends Command {
 
-    public ContextCommand(String name, String usage, String description) {
-        super(name, usage, description);
+    public ContextCommand(String name, String usage, String description, int permissionsRequired) {
+        super(name, usage, description, permissionsRequired);
     }
 
     public abstract void execute(CommandContext context);

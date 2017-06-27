@@ -4,7 +4,6 @@ import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
-import handiebot.utils.DisappearingMessage;
 
 /**
  * @author Andrew Lalis
@@ -15,7 +14,8 @@ public class PlayCommand extends ContextCommand {
     public PlayCommand() {
         super("play",
                 "[URL]",
-                "Plays a song, or adds it to the queue.");
+                "Plays a song, or adds it to the queue.",
+                0);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class PlayCommand extends ContextCommand {
             try {
                 HandieBot.musicPlayer.addToQueue(context.getGuild(), new UnloadedTrack(context.getArgs()[0]));
             } catch (Exception e) {
-                new DisappearingMessage(context.getChannel(), "Unable to queue track: "+context.getArgs()[0], 3000);
+                context.getChannel().sendMessage("Unable to add song to queue: "+context.getArgs()[0]+".");
                 e.printStackTrace();
             }
         }

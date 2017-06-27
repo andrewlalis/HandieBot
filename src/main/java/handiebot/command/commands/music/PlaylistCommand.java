@@ -9,7 +9,6 @@ import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IMessage;
 
 import java.io.File;
 import java.util.List;
@@ -21,7 +20,7 @@ import static handiebot.HandieBot.log;
  * Command to manipulate playlists.
  */
 public class PlaylistCommand extends ContextCommand {
-
+//TODO: Add specific permissions per argument.
     public PlaylistCommand(){
         super("playlist",
                 "<create|delete|show|add|remove|rename|move|play> [PLAYLIST]",
@@ -33,7 +32,8 @@ public class PlaylistCommand extends ContextCommand {
                 "\t`remove <PLAYLIST> <SONGINDEX>` - Removes a song from a playlist.\n" +
                 "\t`rename <PLAYLIST> <NEWNAME>` - Renames a playlist.\n" +
                 "\t`move <PLAYLIST> <OLDINDEX> <NEWINDEX>` - Moves a song from one index to another.\n" +
-                "\t`play <PLAYLIST>` - Queues all songs from a playlist.");
+                "\t`play <PLAYLIST>` - Queues all songs from a playlist.",
+                0);
     }
 
     @Override
@@ -96,9 +96,9 @@ public class PlaylistCommand extends ContextCommand {
             }
             playlist.save();
             log.log(BotLog.TYPE.INFO, "Created playlist: "+playlist.getName()+" with "+playlist.getTrackCount()+" new tracks.");
-            new DisappearingMessage(context.getChannel(), "Your playlist *"+playlist.getName()+"* has been created.\nType `"+ CommandHandler.PREFIXES.get(context.getGuild())+"playlist play "+playlist.getName()+"` to play it.", 5000);
+            context.getChannel().sendMessage("Your playlist *"+playlist.getName()+"* has been created.\nType `"+this.getPrefixedName(context.getGuild())+" play "+playlist.getName()+"` to play it.");
         } else {
-            new DisappearingMessage(context.getChannel(), "You must specify a name for the new playlist.", 3000);
+            context.getChannel().sendMessage("You must specify a name for the new playlist.");
         }
     }
 
@@ -108,21 +108,19 @@ public class PlaylistCommand extends ContextCommand {
      */
     private void delete(CommandContext context){
         if (context.getArgs().length == 2){
-            if (Playlist.playlistExists(context.getArgs()[1])){
-                File f = new File(System.getProperty("user.home")+"/.handiebot/playlist/"+context.getArgs()[1].replace(" ", "_")+".txt");
-                boolean success = f.delete();
-                if (success){
-                    log.log(BotLog.TYPE.INFO, "The playlist ["+context.getArgs()[1]+"] has been deleted.");
-                    new DisappearingMessage(context.getChannel(), "The playlist *"+context.getArgs()[1]+"* has been deleted.", 5000);
-                } else {
-                    log.log(BotLog.TYPE.ERROR, "Unable to delete playlist: "+context.getArgs()[1]);
-                    new DisappearingMessage(context.getChannel(), "The playlist was not able to be deleted.", 3000);
-                }
+            if (!checkForPlaylist(context))
+                return;
+            File f = new File(System.getProperty("user.home")+"/.handiebot/playlist/"+context.getArgs()[1].replace(" ", "_")+".txt");
+            boolean success = f.delete();
+            if (success){
+                log.log(BotLog.TYPE.INFO, "The playlist ["+context.getArgs()[1]+"] has been deleted.");
+                context.getChannel().sendMessage("The playlist *"+context.getArgs()[1]+"* has been deleted.");
             } else {
-                new DisappearingMessage(context.getChannel(), "The name you entered is not a playlist.\nType `"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to list the playlists available.", 5000);
+                log.log(BotLog.TYPE.ERROR, "Unable to delete playlist: "+context.getArgs()[1]);
+                context.getChannel().sendMessage("The playlist could not be deleted.");
             }
         } else {
-            new DisappearingMessage(context.getChannel(), "You must specify the name of a playlist to delete.", 3000);
+            context.getChannel().sendMessage("You must specify the name of a playlist to delete.");
         }
     }
 
@@ -132,22 +130,18 @@ public class PlaylistCommand extends ContextCommand {
      */
     private void show(CommandContext context){
         if (context.getArgs().length > 1){
-            if (Playlist.playlistExists(context.getArgs()[1])){
-                Playlist playlist = new Playlist(context.getArgs()[1]);
-                playlist.load();
-                IMessage message = context.getChannel().sendMessage(playlist.toString());
-                DisappearingMessage.deleteMessageAfter(12000, message);
-            } else {
-                new DisappearingMessage(context.getChannel(), "The playlist you specified does not exist.\nUse `"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 5000);
-            }
+            if (!checkForPlaylist(context))
+                return;
+            Playlist playlist = new Playlist(context.getArgs()[1]);
+            playlist.load();
+            context.getChannel().sendMessage(playlist.toString());
         } else {
             List<String> playlists = Playlist.getAvailablePlaylists();
             StringBuilder sb = new StringBuilder("**Playlists:**\n");
             for (String playlist : playlists) {
                 sb.append(playlist).append('\n');
             }
-            IMessage message = context.getChannel().sendMessage(sb.toString());
-            DisappearingMessage.deleteMessageAfter(12000, message);
+            context.getChannel().sendMessage(sb.toString());
         }
     }
 
@@ -157,25 +151,22 @@ public class PlaylistCommand extends ContextCommand {
      */
     private void add(CommandContext context){
         if (context.getArgs().length > 2){
-            if (!Playlist.playlistExists(context.getArgs()[1])){
-                new DisappearingMessage(context.getChannel(), "The playlist you entered does not exist.", 3000);
+            if (!checkForPlaylist(context))
                 return;
-            }
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
             for (int i = 2; i < context.getArgs().length; i++){
                 playlist.loadTrack(context.getArgs()[i]);
-                new DisappearingMessage(context.getChannel(), "Added track to *"+playlist.getName()+"*.", 3000);
+                context.getChannel().sendMessage("Added track to *"+playlist.getName()+"*.");
             }
             playlist.save();
-            IMessage message = context.getChannel().sendMessage(playlist.toString());
+            context.getChannel().sendMessage(playlist.toString());
             log.log(BotLog.TYPE.INFO, "Added song(s) to playlist ["+playlist.getName()+"].");
-            DisappearingMessage.deleteMessageAfter(6000, message);
         } else {
             if (context.getArgs().length == 1){
-                new DisappearingMessage(context.getChannel(), "You must provide the name of a playlist to add a URL to.\nUse '"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 5000);
+                context.getChannel().sendMessage("You must provide the name of a playlist to add a URL to."+getPlaylistShowString(context));
             } else {
-                new DisappearingMessage(context.getChannel(), "You must provide at least one URL to add.", 3000);
+                context.getChannel().sendMessage("You must provide at least one URL to add.");
             }
         }
     }
@@ -186,18 +177,16 @@ public class PlaylistCommand extends ContextCommand {
      */
     private void play(CommandContext context){
         if (context.getArgs().length == 2){
-            if (!Playlist.playlistExists(context.getArgs()[1])){
-                new DisappearingMessage(context.getChannel(), "The playlist you entered does not exist.", 3000);
+            if (!checkForPlaylist(context))
                 return;
-            }
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
             HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.setPlaylist(playlist);
             HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.nextTrack();
             log.log(BotLog.TYPE.INFO, "Loaded playlist ["+playlist.getName()+"].");
-            new DisappearingMessage(context.getChannel(), "Now playing from playlist: *"+playlist.getName()+"*.", 6000);
+            context.getChannel().sendMessage("Loaded songs from playlist: *"+playlist.getName()+"*.");
         } else {
-            new DisappearingMessage(context.getChannel(), "You must provide a playlist to play.\nUse '"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.", 3000);
+            context.getChannel().sendMessage("You must provide a playlist to play."+getPlaylistShowString(context));
         }
     }
 
@@ -207,21 +196,19 @@ public class PlaylistCommand extends ContextCommand {
      */
     private void rename(CommandContext context){
         if (context.getArgs().length == 3){
-            if (!Playlist.playlistExists(context.getArgs()[1])){
-                new DisappearingMessage(context.getChannel(), "The playlist you entered does not exist.", 3000);
+            if (!checkForPlaylist(context))
                 return;
-            }
             File f = new File(System.getProperty("user.home")+"/.handiebot/playlist/"+context.getArgs()[1].replace(" ", "_")+".txt");
             boolean success = f.renameTo(new File(System.getProperty("user.home")+"/.handiebot/playlist/"+context.getArgs()[2].replace(" ", "_")+".txt"));
             if (success){
-                new DisappearingMessage(context.getChannel(), "The playlist *"+context.getArgs()[1]+"* has been renamed to *"+context.getArgs()[2]+"*.", 6000);
+                context.getChannel().sendMessage("The playlist *"+context.getArgs()[1]+"* has been renamed to *"+context.getArgs()[2]+"*.");
                 log.log(BotLog.TYPE.INFO, "Playlist "+context.getArgs()[1]+" renamed to "+context.getArgs()[2]+".");
             } else {
-                new DisappearingMessage(context.getChannel(), "Unable to rename playlist.", 3000);
+                context.getChannel().sendMessage("Unable to rename playlist.");
                 log.log(BotLog.TYPE.ERROR, "Unable to rename playlist "+context.getArgs()[1]+" to "+context.getArgs()[2]+".");
             }
         } else {
-            new DisappearingMessage(context.getChannel(), "You must include the original playlist, and a new name for it.", 3000);
+            context.getChannel().sendMessage("You must include the original playlist, and a new name for it.");
         }
     }
 
@@ -231,10 +218,8 @@ public class PlaylistCommand extends ContextCommand {
      */
     private void remove(CommandContext context){
         if (context.getArgs().length == 3){
-            if (!Playlist.playlistExists(context.getArgs()[1])){
-                new DisappearingMessage(context.getChannel(), "The playlist you entered does not exist.", 3000);
+            if (!checkForPlaylist(context))
                 return;
-            }
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
             try{
@@ -242,17 +227,16 @@ public class PlaylistCommand extends ContextCommand {
                 UnloadedTrack track = playlist.getTracks().get(index);
                 playlist.removeTrack(track);
                 playlist.save();
-                new DisappearingMessage(context.getChannel(), "Removed song: *"+track.getTitle()+"* from playlist **"+playlist.getName()+"**.", 6000);
+                context.getChannel().sendMessage("Removed song: *"+track.getTitle()+"* from playlist **"+playlist.getName()+"**.");
                 log.log(BotLog.TYPE.MUSIC, "Removed song: "+track.getTitle()+" from playlist ["+playlist.getName()+"].");
-                DisappearingMessage.deleteMessageAfter(6000, context.getChannel().sendMessage(playlist.toString()));
             } catch (IndexOutOfBoundsException | NumberFormatException e){
-                new DisappearingMessage(context.getChannel(), "Unable to remove the specified song.", 3000);
+                context.getChannel().sendMessage("Unable to remove the specified song.");
                 log.log(BotLog.TYPE.ERROR, "Unable to remove song from playlist: ["+playlist.getName()+"].");
                 e.printStackTrace();
             }
 
         } else {
-            new DisappearingMessage(context.getChannel(), "You must provide a playlist name, followed by the index number of a song to remove.", 5000);
+            context.getChannel().sendMessage("You must provide a playlist name, followed by the index number of a song to remove.");
         }
     }
 
@@ -262,10 +246,8 @@ public class PlaylistCommand extends ContextCommand {
      */
     private void move(CommandContext context){
         if (context.getArgs().length == 4){
-            if (!Playlist.playlistExists(context.getArgs()[1])){
-                new DisappearingMessage(context.getChannel(), "The playlist you entered does not exist.", 3000);
+            if (!checkForPlaylist(context))
                 return;
-            }
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
             int oldIndex = -1;
@@ -274,7 +256,7 @@ public class PlaylistCommand extends ContextCommand {
                 oldIndex = Integer.parseInt(context.getArgs()[2])-1;
                 newIndex = Integer.parseInt(context.getArgs()[3])-1;
             } catch (NumberFormatException e){
-                new DisappearingMessage(context.getChannel(), "You must enter two integer values for the song indices.", 5000);
+                context.getChannel().sendMessage("You must enter two positive natural numbers for the song indices.");
             }
             UnloadedTrack track;
             if ((oldIndex > -1 && oldIndex < playlist.getTrackCount()) &&
@@ -282,14 +264,37 @@ public class PlaylistCommand extends ContextCommand {
                 track = playlist.getTracks().remove(oldIndex);
                 playlist.getTracks().add(newIndex, track);
                 playlist.save();
-                new DisappearingMessage(context.getChannel(), "Moved song *"+track.getTitle()+"* from position "+(oldIndex+1)+" to position "+(newIndex+1), 6000);
+                context.getChannel().sendMessage("Moved song *"+track.getTitle()+"* from position "+(oldIndex+1)+" to position "+(newIndex+1));
                 log.log(BotLog.TYPE.MUSIC, "Moved song "+track.getTitle()+" from position "+(oldIndex+1)+" to position "+(newIndex+1));
             } else {
-                new DisappearingMessage(context.getChannel(), "The song indices are invalid. You specified moving song "+oldIndex+" to position "+newIndex+". ", 5000);
+                context.getChannel().sendMessage("The song indices are invalid. You specified moving song "+oldIndex+" to position "+newIndex+".");
             }
         } else {
-            new DisappearingMessage(context.getChannel(), "You must provide a playlist name, followed by the song index, and a new index for that song.", 5000);
+            context.getChannel().sendMessage("You must provide a playlist name, followed by the song index, and a new index for that song.");
         }
+    }
+
+    /**
+     * Checks if a playlist exists, and if not, outputs a message to let people know.
+     * Used before most of the commands here to make sure the playlist actually exists, and exit if it doesn't.
+     * @param context The command context.
+     * @return True if the playlist exists, false otherwise.
+     */
+    private boolean checkForPlaylist(CommandContext context){
+        if (!Playlist.playlistExists(context.getArgs()[1])){
+            new DisappearingMessage(context.getChannel(), "The playlist you entered does not exist."+getPlaylistShowString(context), 3000);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Simply returns a string that uses the correct prefix.
+     * @param context The command context.
+     * @return A correct suggestion on how to view all playlists.
+     */
+    private String getPlaylistShowString(CommandContext context){
+        return "\nUse `"+CommandHandler.PREFIXES.get(context.getGuild())+"playlist show` to view available playlists.";
     }
 
 }

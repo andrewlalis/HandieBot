@@ -1,4 +1,4 @@
-package handiebot.command.commands;
+package handiebot.command.commands.support;
 
 import handiebot.command.CommandContext;
 import handiebot.command.Commands;
@@ -11,11 +11,12 @@ import sx.blah.discord.handle.obj.IPrivateChannel;
  * Class for sending help/command info to a user if they so desire it.
  */
 public class HelpCommand extends ContextCommand {
-//TODO: Finish the help class.
+
     public HelpCommand() {
         super("help",
                 "",
-                "Displays a list of commands and what they do.");
+                "Displays a list of commands and what they do.",
+                0);
     }
 
     @Override
