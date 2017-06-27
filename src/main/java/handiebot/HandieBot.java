@@ -22,6 +22,7 @@ import sx.blah.discord.util.RateLimitException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author Andrew Lalis
@@ -33,6 +34,8 @@ public class HandieBot {
 
     public static final String APPLICATION_NAME = "HandieBot";
     private static final String TOKEN = "MjgzNjUyOTg5MjEyNjg4Mzg0.C45A_Q.506b0G6my1FEFa7_YY39lxLBHUY";
+
+    public static ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings");
 
     //Discord client object.
     public static IDiscordClient client;

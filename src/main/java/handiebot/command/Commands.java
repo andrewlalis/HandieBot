@@ -8,7 +8,6 @@ import handiebot.command.commands.support.InfoCommand;
 import handiebot.command.types.Command;
 import handiebot.command.types.ContextCommand;
 import handiebot.command.types.StaticCommand;
-import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
 
 import java.util.ArrayList;
@@ -50,7 +49,7 @@ public class Commands {
             if (cmd.getName().equals(command)){
                 if (!cmd.canUserExecute(context.getUser(), context.getGuild())){
                     log.log(BotLog.TYPE.ERROR, context.getGuild(), "User "+context.getUser().getName()+" does not have permission to execute "+cmd.getName());
-                    new DisappearingMessage(context.getChannel(), "You do not have permission to use that command.", 5000);
+                    context.getChannel().sendMessage("You do not have permission to use the command `"+command+"`.");
                 }
                 if (cmd instanceof ContextCommand){
                     ((ContextCommand)cmd).execute(context);

@@ -13,7 +13,7 @@ public class QuitCommand extends StaticCommand {
         super("quit",
                 "",
                 "Shuts down the bot on all servers.",
-                0);
+                8);
     }
 
     @Override
