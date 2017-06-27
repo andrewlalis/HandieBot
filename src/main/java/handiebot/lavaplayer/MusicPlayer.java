@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import handiebot.HandieBot;
-import handiebot.command.CommandHandler;
+import handiebot.command.Commands;
 import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.DisappearingMessage;
@@ -12,7 +12,6 @@ import handiebot.utils.Pastebin;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 import sx.blah.discord.util.EmbedBuilder;
 
@@ -127,7 +126,7 @@ public class MusicPlayer {
     public void setRepeat(IGuild guild, boolean value){
         getMusicManager(guild).scheduler.setRepeat(value);
         log.log(BotLog.TYPE.MUSIC, guild, "Set repeat to "+getMusicManager(guild).scheduler.isRepeating());
-        new DisappearingMessage(getChatChannel(guild), "Set repeat to "+getMusicManager(guild).scheduler.isRepeating(), 3000);
+        getChatChannel(guild).sendMessage("Set repeat to "+getMusicManager(guild).scheduler.isRepeating());
     }
 
     /**
@@ -146,7 +145,7 @@ public class MusicPlayer {
     public void setShuffle(IGuild guild, boolean value){
         getMusicManager(guild).scheduler.setShuffle(value);
         log.log(BotLog.TYPE.MUSIC, guild, "Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(guild).scheduler.isShuffling()));
-        new DisappearingMessage(getChatChannel(guild), "Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(guild).scheduler.isShuffling()), 3000);
+        getChatChannel(guild).sendMessage("Set shuffle to "+Boolean.toString(HandieBot.musicPlayer.getMusicManager(guild).scheduler.isShuffling()));
     }
 
     /**
@@ -155,13 +154,14 @@ public class MusicPlayer {
     public void showQueueList(IGuild guild, boolean showAll) {
         List<UnloadedTrack> tracks = getMusicManager(guild).scheduler.queueList();
         if (tracks.size() == 0) {
-            new DisappearingMessage(getChatChannel(guild), "The queue is empty. Use **"+ CommandHandler.PREFIXES.get(guild)+"play** *URL* to add songs.", 3000);
+            getChatChannel(guild).sendMessage("The queue is empty. Use `"+ Commands.get("play").getUsage()+"` to add songs.");
         } else {
             if (tracks.size() > 10 && showAll) {
                 String result = Pastebin.paste("Current queue for discord server: "+guild.getName()+".", getMusicManager(guild).scheduler.getActivePlaylist().toString());
                 if (result != null && result.startsWith("https://pastebin.com/")){
                     log.log(BotLog.TYPE.INFO, guild, "Queue uploaded to pastebin: "+result);
-                    new DisappearingMessage(getChatChannel(guild), "You may view the full queue by following the link: "+result, 600000);
+                    //Only display the pastebin link for 10 minutes.
+                    new DisappearingMessage(getChatChannel(guild), "You may view the full queue by following the link: "+result+"\nNote that this link expires in 10 minutes.", 600000);
                 } else {
                     log.log(BotLog.TYPE.ERROR, guild, "Unable to upload to pastebin: "+result);
                 }
@@ -175,8 +175,7 @@ public class MusicPlayer {
                     sb.append(tracks.get(i).getFormattedDuration()).append('\n');
                 }
                 builder.appendField("Showing " + (tracks.size() <= 10 ? tracks.size() : "the first 10") + " track" + (tracks.size() > 1 ? "s" : "") + " out of "+tracks.size()+".", sb.toString(), false);
-                IMessage message = getChatChannel(guild).sendMessage(builder.build());
-                DisappearingMessage.deleteMessageAfter(6000, message);
+                getChatChannel(guild).sendMessage(builder.build());
             }
         }
     }
@@ -206,8 +205,7 @@ public class MusicPlayer {
                 ));
             }
             if (sb.length() > 0) {
-                IMessage message = getChatChannel(guild).sendMessage(sb.toString());
-                DisappearingMessage.deleteMessageAfter(3000, message);
+                getChatChannel(guild).sendMessage(sb.toString());
             }
         }
 
@@ -226,7 +224,7 @@ public class MusicPlayer {
 
     public void clearQueue(IGuild guild){
         getMusicManager(guild).scheduler.clearQueue();
-        new DisappearingMessage(getChatChannel(guild), "Cleared the queue.", 5000);
+        getChatChannel(guild).sendMessage("Cleared the queue.");
     }
 
     /**
@@ -235,7 +233,7 @@ public class MusicPlayer {
     public void skipTrack(IGuild guild){
         getMusicManager(guild).scheduler.nextTrack();
         log.log(BotLog.TYPE.MUSIC, guild, "Skipping the current track. ");
-        new DisappearingMessage(getChatChannel(guild), "Skipping the current track.", 3000);
+        getChatChannel(guild).sendMessage("Skipping the current track.");
     }
 
     /**
@@ -244,7 +242,7 @@ public class MusicPlayer {
      */
     public void stop(IGuild guild){
         getMusicManager(guild).scheduler.stop();
-        new DisappearingMessage(getChatChannel(guild), "Stopped playing music.", 5000);
+        getChatChannel(guild).sendMessage("Stopped playing music.");
         log.log(BotLog.TYPE.MUSIC, guild, "Stopped playing music.");
     }
 

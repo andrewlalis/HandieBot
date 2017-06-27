@@ -1,13 +1,14 @@
 package handiebot.view;
 
-import handiebot.view.actions.QuitAction;
+import handiebot.command.Commands;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 /**
- * Created by Andrew's Computer on 21-Jun-17.
+ * @author Andrew Lalis
+ * Class to listen for commands from the console command line.
  */
 public class CommandLineListener implements KeyListener {
 
@@ -41,8 +42,8 @@ public class CommandLineListener implements KeyListener {
      * @param args The list of arguments for the command.
      */
     private void executeCommand(String command, String[] args){
-        if (command.equals("stop")){
-            new QuitAction().actionPerformed(null);
+        if (command.equals("quit")){
+            Commands.executeCommand("quit", null);
         }
     }
 }

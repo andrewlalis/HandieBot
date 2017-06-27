@@ -6,8 +6,8 @@ package handiebot.command.types;
  */
 public abstract class StaticCommand extends Command {
 
-    public StaticCommand(String name, String usage, String description) {
-        super(name, usage, description);
+    public StaticCommand(String name, String usage, String description, int permissionsRequired) {
+        super(name, usage, description, permissionsRequired);
     }
 
     public abstract void execute();

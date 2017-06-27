@@ -13,7 +13,8 @@ public class RepeatCommand extends ContextCommand {
     public RepeatCommand(){
         super("repeat",
                 "[true|false]",
-                "Sets repeating.");
+                "Sets repeating.",
+                8);
     }
 
     @Override

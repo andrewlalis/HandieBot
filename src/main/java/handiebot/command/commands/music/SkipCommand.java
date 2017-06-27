@@ -13,7 +13,8 @@ public class SkipCommand extends ContextCommand {
     public SkipCommand() {
         super("skip",
                 "",
-                "Skips the current song.");
+                "Skips the current song.",
+                8);
     }
 
     @Override

@@ -13,7 +13,8 @@ public class StopCommand extends ContextCommand {
     public StopCommand(){
         super("stop",
                 "",
-                "Stops playing music.");
+                "Stops playing music.",
+                8);
     }
 
     @Override

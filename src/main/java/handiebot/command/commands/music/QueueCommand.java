@@ -4,7 +4,6 @@ import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.Playlist;
-import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
 
 import static handiebot.HandieBot.log;
@@ -14,13 +13,15 @@ import static handiebot.HandieBot.log;
  * Queue command to display the active queue.
  */
 public class QueueCommand extends ContextCommand {
+    //TODO: Add specific permissions per argument.
     public QueueCommand() {
         super("queue",
                 "[all|clear|save]",
                 "Shows the first 10 songs in the queue.\n" +
                         "\t`all` - Shows all songs.\n" +
                         "\t`clear` - Clears the queue and stops playing.\n" +
-                        "\t`save <PLAYLIST>` - Saves the queue to a playlist.");
+                        "\t`save <PLAYLIST>` - Saves the queue to a playlist.",
+                0);
     }
 
     @Override
@@ -35,7 +36,7 @@ public class QueueCommand extends ContextCommand {
                 Playlist p = HandieBot.musicPlayer.getAllSongsInQueue(context.getGuild());
                 p.setName(context.getArgs()[1]);
                 p.save();
-                new DisappearingMessage(context.getChannel(), "Saved "+p.getTrackCount()+" tracks to playlist **"+p.getName()+"**.", 6000);
+                context.getChannel().sendMessage("Saved "+p.getTrackCount()+" tracks to playlist **"+p.getName()+"**.");
                 log.log(BotLog.TYPE.INFO, "Saved queue to playlist ["+p.getName()+"].");
             }
         } else {

@@ -1,9 +1,8 @@
-package handiebot.command.commands;
+package handiebot.command.commands.admin;
 
 import handiebot.command.CommandContext;
 import handiebot.command.CommandHandler;
 import handiebot.command.types.ContextCommand;
-import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
 
 import static handiebot.HandieBot.log;
@@ -17,7 +16,8 @@ public class SetPrefixCommand extends ContextCommand {
     public SetPrefixCommand() {
         super("setprefix",
                 "<PREFIX>",
-                "Sets the prefix for commands.");
+                "Sets the prefix for commands.",
+                8);
     }
 
     @Override
@@ -25,10 +25,10 @@ public class SetPrefixCommand extends ContextCommand {
         if (context.getArgs().length == 1) {
             CommandHandler.PREFIXES.put(context.getGuild(), context.getArgs()[0]);
             CommandHandler.saveGuildPrefixes();
-            new DisappearingMessage(context.getChannel(), "Changed command prefix to \""+context.getArgs()[0]+"\"", 6000);
+            context.getChannel().sendMessage("Changed command prefix to \""+context.getArgs()[0]+"\"");
             log.log(BotLog.TYPE.INFO, "Changed command prefix to \""+context.getArgs()[0]+"\"");
         } else {
-            new DisappearingMessage(context.getChannel(), "You must provide a new prefix.", 3000);
+            context.getChannel().sendMessage("You must provide a new prefix.");
         }
     }
 }
