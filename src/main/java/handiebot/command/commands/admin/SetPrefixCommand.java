@@ -5,7 +5,10 @@ import handiebot.command.CommandHandler;
 import handiebot.command.types.ContextCommand;
 import handiebot.view.BotLog;
 
+import java.text.MessageFormat;
+
 import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
@@ -16,7 +19,7 @@ public class SetPrefixCommand extends ContextCommand {
     public SetPrefixCommand() {
         super("setprefix",
                 "<PREFIX>",
-                "Sets the prefix for commands.",
+                resourceBundle.getString("commands.command.setPrefix.description"),
                 8);
     }
 
@@ -25,10 +28,11 @@ public class SetPrefixCommand extends ContextCommand {
         if (context.getArgs().length == 1) {
             CommandHandler.PREFIXES.put(context.getGuild(), context.getArgs()[0]);
             CommandHandler.saveGuildPrefixes();
-            context.getChannel().sendMessage("Changed command prefix to \""+context.getArgs()[0]+"\"");
-            log.log(BotLog.TYPE.INFO, "Changed command prefix to \""+context.getArgs()[0]+"\"");
+            String response = MessageFormat.format(resourceBundle.getString("commands.command.setPrefix.changed"), context.getArgs()[0]);
+            context.getChannel().sendMessage(response);
+            log.log(BotLog.TYPE.INFO, response);
         } else {
-            context.getChannel().sendMessage("You must provide a new prefix.");
+            context.getChannel().sendMessage(resourceBundle.getString("commands.command.setPrefix.noPrefixError"));
         }
     }
 }

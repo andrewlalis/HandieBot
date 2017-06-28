@@ -4,6 +4,8 @@ import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
 
+import static handiebot.HandieBot.resourceBundle;
+
 /**
  * @author Andrew Lalis
  * Command to toggle repeating of the active playlist.
@@ -13,7 +15,7 @@ public class RepeatCommand extends ContextCommand {
     public RepeatCommand(){
         super("repeat",
                 "[true|false]",
-                "Sets repeating.",
+                resourceBundle.getString("commands.command.repeat.description"),
                 8);
     }
 

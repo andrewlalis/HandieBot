@@ -6,7 +6,10 @@ import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.view.BotLog;
 
+import java.text.MessageFormat;
+
 import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
@@ -17,27 +20,31 @@ public class QueueCommand extends ContextCommand {
     public QueueCommand() {
         super("queue",
                 "[all|clear|save]",
-                "Shows the first 10 songs in the queue.\n" +
-                        "\t`all` - Shows all songs.\n" +
-                        "\t`clear` - Clears the queue and stops playing.\n" +
-                        "\t`save <PLAYLIST>` - Saves the queue to a playlist.",
+                resourceBundle.getString("commands.command.queue.description.main")+"\n" +
+                        "\t`all` - "+resourceBundle.getString("commands.command.queue.description.all")+"\n" +
+                        "\t`clear` - "+resourceBundle.getString("commands.command.queue.description.clear")+"\n" +
+                        "\t`save <PLAYLIST>` - "+resourceBundle.getString("commands.command.queue.description.save"),
                 0);
     }
 
     @Override
     public void execute(CommandContext context) {
         if (context.getArgs().length > 0){
-            if (context.getArgs()[0].equals("all")){
-                HandieBot.musicPlayer.showQueueList(context.getGuild(), true);
-            } else if (context.getArgs()[0].equals("clear")){
-                HandieBot.musicPlayer.clearQueue(context.getGuild());
-                log.log(BotLog.TYPE.MUSIC, context.getGuild(), "Cleared queue.");
-            } else if (context.getArgs()[0].equals("save") && context.getArgs().length == 2){
-                Playlist p = HandieBot.musicPlayer.getAllSongsInQueue(context.getGuild());
-                p.setName(context.getArgs()[1]);
-                p.save();
-                context.getChannel().sendMessage("Saved "+p.getTrackCount()+" tracks to playlist **"+p.getName()+"**.");
-                log.log(BotLog.TYPE.INFO, "Saved queue to playlist ["+p.getName()+"].");
+            switch (context.getArgs()[0]){
+                case ("all"):
+                    HandieBot.musicPlayer.showQueueList(context.getGuild(), true);
+                    break;
+                case ("clear"):
+                    HandieBot.musicPlayer.clearQueue(context.getGuild());
+                    log.log(BotLog.TYPE.MUSIC, context.getGuild(), resourceBundle.getString("commands.command.queue.clear"));
+                    break;
+                case ("save"):
+                    Playlist p = HandieBot.musicPlayer.getAllSongsInQueue(context.getGuild());
+                    p.setName(context.getArgs()[1]);
+                    p.save();
+                    context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.queue.save.message"), p.getTrackCount(), p.getName()));
+                    log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.queue.save.log"), p.getName()));
+                    break;
             }
         } else {
             HandieBot.musicPlayer.showQueueList(context.getGuild(), false);

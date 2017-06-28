@@ -9,6 +9,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 
+import static handiebot.HandieBot.resourceBundle;
+
 /**
  * @author Andrew Lalis
  * This class inherits JFrame and simplifies the creation of a window.
@@ -40,8 +42,8 @@ public class BotWindow extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (JOptionPane.showConfirmDialog((JFrame) e.getSource(), "Are you sure you want to exit and shutdown the bot?",
-                        "Confirm shutdown",
+                if (JOptionPane.showConfirmDialog((JFrame) e.getSource(), resourceBundle.getString("window.close.question"),
+                        resourceBundle.getString("window.close.title"),
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
                     HandieBot.quit();

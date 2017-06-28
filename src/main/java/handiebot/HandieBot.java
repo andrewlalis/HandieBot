@@ -31,6 +31,7 @@ public class HandieBot {
 
     public static final String APPLICATION_NAME = "HandieBot";
     private static final String TOKEN = "MjgzNjUyOTg5MjEyNjg4Mzg0.C45A_Q.506b0G6my1FEFa7_YY39lxLBHUY";
+    private static boolean USE_GUI = true;
 
     public static ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings");
 
@@ -78,7 +79,7 @@ public class HandieBot {
 
     @EventSubscriber
     public void onReady(ReadyEvent event){
-        log.log(BotLog.TYPE.INFO, "HandieBot initialized.");
+        log.log(BotLog.TYPE.INFO, resourceBundle.getString("log.init"));
         //client.changeAvatar(Image.forStream("png", getClass().getClassLoader().getResourceAsStream("avatarIcon.png")));
     }
 
@@ -86,10 +87,18 @@ public class HandieBot {
 
         musicPlayer = new MusicPlayer();
 
-        window = new BotWindow();
-        log = new BotLog(window.getOutputArea());
+        if (args.length >= 1) {
+            if (args[0].equalsIgnoreCase("-nogui")){
+                USE_GUI = false;
+            }
+        }
 
-        log.log(BotLog.TYPE.INFO, "Logging client in...");
+        if (USE_GUI){
+            window = new BotWindow();
+            log = new BotLog(window.getOutputArea());
+        }
+
+        log.log(BotLog.TYPE.INFO, resourceBundle.getString("log.loggingIn"));
         client = new ClientBuilder().withToken(TOKEN).build();
         client.getDispatcher().registerListener(new HandieBot());
         client.login();
@@ -109,7 +118,7 @@ public class HandieBot {
      * Safely shuts down the bot on all guilds.
      */
     public static void quit(){
-        log.log(BotLog.TYPE.INFO, "Shutting down the bot.");
+        log.log(BotLog.TYPE.INFO, resourceBundle.getString("log.shuttingDown"));
         musicPlayer.quitAll();
         client.logout();
         window.dispose();

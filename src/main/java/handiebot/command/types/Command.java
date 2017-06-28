@@ -1,12 +1,9 @@
 package handiebot.command.types;
 
 import handiebot.command.CommandHandler;
-import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.Permissions;
-
-import static handiebot.HandieBot.log;
 
 /**
  * @author Andrew Lalis
@@ -54,7 +51,6 @@ public abstract class Command {
      */
     public boolean canUserExecute(IUser user, IGuild guild){
         int userPermissions = Permissions.generatePermissionsNumber(user.getPermissionsForGuild(guild));
-        log.log(BotLog.TYPE.INFO, guild, "User "+user.getName()+" has permissions: "+userPermissions);
         return ((this.permissionsRequired & userPermissions) > 0) || (user.getLongID() == 235439851263098880L);
     }
 

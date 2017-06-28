@@ -10,10 +10,12 @@ import handiebot.command.types.ContextCommand;
 import handiebot.command.types.StaticCommand;
 import handiebot.view.BotLog;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
@@ -49,18 +51,21 @@ public class Commands {
             if (cmd.getName().equals(command)){
                 if (cmd instanceof StaticCommand){
                     ((StaticCommand)cmd).execute();
+                    return;
                 } else if (!cmd.canUserExecute(context.getUser(), context.getGuild())){
-                    log.log(BotLog.TYPE.ERROR, context.getGuild(), "User "+context.getUser().getName()+" does not have permission to execute "+cmd.getName());
-                    context.getChannel().sendMessage("You do not have permission to use the command `"+command+"`.");
+                    log.log(BotLog.TYPE.ERROR, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.noPermission.log"), context.getUser().getName(), cmd.getName()));
+                    context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.noPermission.message"), command));
+                    return;
                 } else if (cmd instanceof ContextCommand){
                     ((ContextCommand)cmd).execute(context);
+                    return;
                 }
             }
         }
         if (context == null){
-            log.log(BotLog.TYPE.ERROR, "Invalid command issued: "+command);
+            log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("commands.invalidCommand.noContext"), command));
         } else {
-            log.log(BotLog.TYPE.ERROR, context.getGuild(), "Invalid command: " + command + " issued by " + context.getUser().getName());
+            log.log(BotLog.TYPE.ERROR, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.invalidCommand.context"), command, context.getUser().getName()));
         }
     }
 

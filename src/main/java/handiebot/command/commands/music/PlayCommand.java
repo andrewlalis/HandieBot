@@ -5,6 +5,10 @@ import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
 
+import java.text.MessageFormat;
+
+import static handiebot.HandieBot.resourceBundle;
+
 /**
  * @author Andrew Lalis
  * Command to play a song from the queue or load a new song.
@@ -14,7 +18,7 @@ public class PlayCommand extends ContextCommand {
     public PlayCommand() {
         super("play",
                 "[URL]",
-                "Plays a song, or adds it to the queue.",
+                resourceBundle.getString("commands.command.play.description"),
                 0);
     }
 
@@ -26,7 +30,7 @@ public class PlayCommand extends ContextCommand {
             try {
                 HandieBot.musicPlayer.addToQueue(context.getGuild(), new UnloadedTrack(context.getArgs()[0]));
             } catch (Exception e) {
-                context.getChannel().sendMessage("Unable to add song to queue: "+context.getArgs()[0]+".");
+                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.play.songAddError"), context.getArgs()[0]));
                 e.printStackTrace();
             }
         }

@@ -4,6 +4,8 @@ import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
 
+import static handiebot.HandieBot.resourceBundle;
+
 /**
  * @author Andrew Lalis
  * Command to set shuffling of the active playlist.
@@ -13,7 +15,7 @@ public class ShuffleCommand extends ContextCommand {
     public ShuffleCommand(){
         super("shuffle",
                 "[true|false]",
-                "Sets shuffling.",
+                resourceBundle.getString("commands.command.shuffle.description"),
                 8);
     }
 
