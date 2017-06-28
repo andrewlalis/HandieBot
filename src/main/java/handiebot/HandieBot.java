@@ -89,7 +89,9 @@ public class HandieBot {
 
         if (args.length >= 1) {
             if (args[0].equalsIgnoreCase("-nogui")){
+                System.out.println("Starting with no GUI.");
                 USE_GUI = false;
+                log = new BotLog(null);
             }
         }
 

@@ -42,7 +42,9 @@ public class BotLog {
 
     public BotLog(JTextPane outputArea){
         this.outputArea = outputArea;
-        initStyles();
+        if (outputArea != null) {
+            initStyles();
+        }
     }
 
     /**
