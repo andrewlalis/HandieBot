@@ -89,6 +89,7 @@ public class BotLog {
     public void log(TYPE type, IGuild guild, String message){
         if (guild == null){
             log(type, message);
+            return;
         }
         Date date = new Date(System.currentTimeMillis());
         DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
