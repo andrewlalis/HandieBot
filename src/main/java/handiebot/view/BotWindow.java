@@ -15,9 +15,28 @@ import java.io.IOException;
  */
 public class BotWindow extends JFrame {
 
-    public BotWindow(View view){
+    private JTextPane outputArea;
+
+    public BotWindow(){
         super(HandieBot.APPLICATION_NAME);
+        //Setup GUI
+
+        //Output area.
+        outputArea = new JTextPane();
+        outputArea.setBackground(Color.white);
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(outputArea);
+        scrollPane.setAutoscrolls(true);
+        getContentPane().add(scrollPane, BorderLayout.CENTER);
+        //Command field.
+        JTextField commandField = new JTextField();
+        commandField.setFont(new Font("Courier New", Font.PLAIN, 16));
+        commandField.addKeyListener(new CommandLineListener());
+        getContentPane().add(commandField, BorderLayout.PAGE_END);
+
+        //Standard JFrame setup code.
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        //Add a listener to override the user attempting to close the program.
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -34,11 +53,14 @@ public class BotWindow extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        setContentPane(view.mainPanel);
         setJMenuBar(new MenuBar());
         setPreferredSize(new Dimension(800, 600));
         pack();
         setVisible(true);
+    }
+
+    public JTextPane getOutputArea(){
+        return this.outputArea;
     }
 
 }

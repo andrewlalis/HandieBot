@@ -70,6 +70,7 @@ public class BotLog {
         Date date = new Date(System.currentTimeMillis());
         DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
         String dateFormatted = formatter.format(date);
+        System.out.println(dateFormatted+'['+type.name()+"] "+message);
         try {
             this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), dateFormatted, this.defaultStyle);
             this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '['+type.name()+"] ", this.logStyles.get(type));
@@ -86,9 +87,13 @@ public class BotLog {
      * @param message The content of the message.
      */
     public void log(TYPE type, IGuild guild, String message){
+        if (guild == null){
+            log(type, message);
+        }
         Date date = new Date(System.currentTimeMillis());
         DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
         String dateFormatted = formatter.format(date);
+        System.out.println(dateFormatted+'['+type.name()+"]["+guild.getName()+"] "+message);
         try {
             this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), dateFormatted, this.defaultStyle);
             this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '['+type.name()+']', this.logStyles.get(type));

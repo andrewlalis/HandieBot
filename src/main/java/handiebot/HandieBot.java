@@ -5,16 +5,13 @@ import handiebot.command.ReactionHandler;
 import handiebot.lavaplayer.MusicPlayer;
 import handiebot.view.BotLog;
 import handiebot.view.BotWindow;
-import handiebot.view.View;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.ReactionEvent;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RateLimitException;
@@ -41,7 +38,6 @@ public class HandieBot {
     public static IDiscordClient client;
 
     //Display objects.
-    public static View view;
     private static BotWindow window;
     public static BotLog log;
 
@@ -90,9 +86,8 @@ public class HandieBot {
 
         musicPlayer = new MusicPlayer();
 
-        view = new View();
-        log = new BotLog(view.getOutputArea());
-        window = new BotWindow(view);
+        window = new BotWindow();
+        log = new BotLog(window.getOutputArea());
 
         log.log(BotLog.TYPE.INFO, "Logging client in...");
         client = new ClientBuilder().withToken(TOKEN).build();
@@ -101,27 +96,13 @@ public class HandieBot {
     }
 
     /**
-     * Gets the integer value representing all permission flags.
-     * @param guild The guild to get permissions for.
-     * @return int representing permissions.
+     * Returns whether or not the bot has a specific permission.
+     * @param permission The permission to check.
+     * @param channel The channel the bot wants to work in.
+     * @return True if the bot has permission, false otherwise.
      */
-    private int getClientPermissions(IGuild guild){
-        List<IRole> roles = client.getOurUser().getRolesForGuild(guild);
-        int allPermissions = 0;
-        for (IRole role : roles) {
-            allPermissions = allPermissions | Permissions.generatePermissionsNumber(role.getPermissions());
-        }
-        return allPermissions;
-    }
-
-    /**
-     * Returns whether or not the user has a certain permission.
-     * @param user The user to check for permission.
-     * @param guild The guild to get the permissions for.
-     * @return True if the bot has this permission, false if not.
-     */
-    boolean hasPermission(IUser user, IGuild guild){
-        return Permissions.getAllowedPermissionsForNumber(getClientPermissions(guild)).contains(user.getPermissionsForGuild(guild));
+    public static boolean hasPermission(Permissions permission, IChannel channel){
+        return channel.getModifiedPermissions(client.getOurUser()).contains(permission);
     }
 
     /**

@@ -47,32 +47,20 @@ public class Commands {
     public static void executeCommand(String command, CommandContext context){
         for (Command cmd : commands) {
             if (cmd.getName().equals(command)){
-                if (!cmd.canUserExecute(context.getUser(), context.getGuild())){
+                if (cmd instanceof StaticCommand){
+                    ((StaticCommand)cmd).execute();
+                } else if (!cmd.canUserExecute(context.getUser(), context.getGuild())){
                     log.log(BotLog.TYPE.ERROR, context.getGuild(), "User "+context.getUser().getName()+" does not have permission to execute "+cmd.getName());
                     context.getChannel().sendMessage("You do not have permission to use the command `"+command+"`.");
-                }
-                if (cmd instanceof ContextCommand){
+                } else if (cmd instanceof ContextCommand){
                     ((ContextCommand)cmd).execute(context);
-                    return;
-                } else if (cmd instanceof StaticCommand){
-                    ((StaticCommand)cmd).execute();
-                    return;
                 }
             }
         }
-        log.log(BotLog.TYPE.ERROR, context.getGuild(), "Invalid command: "+command+" issued by "+context.getUser().getName());
-    }
-
-    /**
-     * Attempts to execute a command.
-     * @param command The command to execute.
-     * @param context The command context.
-     */
-    public static void executeCommand(Command command, CommandContext context){
-        if (command instanceof ContextCommand && context != null){
-            ((ContextCommand)command).execute(context);
-        } else if (command instanceof StaticCommand){
-            ((StaticCommand)command).execute();
+        if (context == null){
+            log.log(BotLog.TYPE.ERROR, "Invalid command issued: "+command);
+        } else {
+            log.log(BotLog.TYPE.ERROR, context.getGuild(), "Invalid command: " + command + " issued by " + context.getUser().getName());
         }
     }
 
