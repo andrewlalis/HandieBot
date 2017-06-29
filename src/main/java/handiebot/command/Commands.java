@@ -49,7 +49,6 @@ public class Commands {
     public static void executeCommand(String command, CommandContext context){
         for (Command cmd : commands) {
             if (cmd.getName().equals(command)){
-                System.out.println(cmd.canUserExecute(context.getUser(), context.getGuild()));
                 if (cmd instanceof StaticCommand){
                     ((StaticCommand)cmd).execute();
                     return;

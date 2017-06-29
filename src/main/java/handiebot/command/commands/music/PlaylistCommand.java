@@ -183,10 +183,10 @@ public class PlaylistCommand extends ContextCommand {
                 return;
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
-            HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.setPlaylist(playlist);
-            HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.nextTrack();
             log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.play.log"), playlist.getName()));
             context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.play.message"), playlist.getName()));
+            HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.setPlaylist(playlist);
+            HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.nextTrack();
         } else {
             context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.playPlaylistNeeded"), getPlaylistShowString(context)));
         }

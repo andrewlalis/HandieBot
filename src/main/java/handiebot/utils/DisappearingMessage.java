@@ -7,6 +7,7 @@ import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.Permissions;
 
 import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
@@ -57,7 +58,7 @@ public class DisappearingMessage extends Thread implements Runnable {
         if (HandieBot.hasPermission(Permissions.MANAGE_MESSAGES, message.getChannel())){
             return true;
         } else {
-            log.log(BotLog.TYPE.ERROR, message.getGuild(), "Unable to delete message. Please ensure that the bot has MANAGE_MESSAGES enabled, especially for this channel.");
+            log.log(BotLog.TYPE.ERROR, message.getGuild(), resourceBundle.getString("log.deleteMessageError"));
             return false;
         }
     }

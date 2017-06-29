@@ -17,7 +17,7 @@ import static handiebot.HandieBot.log;
  * Class to simplify file operations.
  */
 public class FileUtil {
-
+//TODO: externalize strings
     public static String getDataDirectory(){
         return System.getProperty("user.home")+"/.handiebot/";
     }

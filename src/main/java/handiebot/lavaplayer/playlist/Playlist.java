@@ -21,7 +21,7 @@ import static handiebot.HandieBot.log;
  * on the playlist.
  */
 public class Playlist {
-
+//TODO: externalize strings
     private String name;
 
     private List<UnloadedTrack> tracks;
@@ -121,7 +121,6 @@ public class Playlist {
     public static int getShuffledIndex(int listLength){
         float threshold = 0.2f;
         int trueLength = listLength - (int)(threshold*(float)listLength);
-        log.log(BotLog.TYPE.INFO, "Shuffle results: Actual size: "+listLength+", Last Usable Index: "+trueLength);
         Random rand = new Random();
         //TODO Add in a small gradient in chance for a song to be picked.
         return rand.nextInt(trueLength);

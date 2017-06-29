@@ -11,7 +11,7 @@ import static handiebot.HandieBot.resourceBundle;
  * Command to toggle repeating of the active playlist.
  */
 public class RepeatCommand extends ContextCommand {
-
+//TODO: make changing settings admin-only
     public RepeatCommand(){
         super("repeat",
                 "[true|false]",
