@@ -1,6 +1,7 @@
 package handiebot.command;
 
 import handiebot.HandieBot;
+import handiebot.view.BotLog;
 import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.ReactionEvent;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IReaction;
@@ -8,12 +9,14 @@ import sx.blah.discord.handle.obj.IUser;
 
 import java.util.List;
 
+import static handiebot.HandieBot.log;
+
 /**
  * @author Andrew Lalis
  * Class which handles user reactions to songs and performs necessary actions.
  */
 public class ReactionHandler {
-
+//TODO: Fix so only reactions on the most recent song count!
     public static final String thumbsUp = "\uD83D\uDC4D";
     public static final String thumbsDown = "\uD83D\uDC4E";
 
@@ -38,7 +41,12 @@ public class ReactionHandler {
      * @param message The messages that received a reaction.
      */
     private static void onDownvote(CommandContext context, IMessage message){
+        //Filter out reactions to previous messages.
+        if (!message.getContent().contains(HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.getPlayingTrack().getTitle())){
+            return;
+        }
         List<IUser> usersHere = HandieBot.musicPlayer.getVoiceChannel(context.getGuild()).getConnectedUsers();
+        //Remove the bot from the list of users in the voice channel.
         usersHere.removeIf(user -> user.getLongID() == HandieBot.client.getOurUser().getLongID());
         int userCount = usersHere.size();
         int userDownvotes = 0;
@@ -48,8 +56,8 @@ public class ReactionHandler {
                 userDownvotes++;
             }
         }
-        System.out.println("Valid downvotes: "+userDownvotes+" out of "+userCount+" people present.");
         if (userDownvotes > (userCount/2)){
+            log.log(BotLog.TYPE.MUSIC, context.getGuild(), "Users voted to skip the current song.");
             HandieBot.musicPlayer.skipTrack(context.getGuild());
         } else if (userDownvotes > 0) {
             context.getChannel().sendMessage((((userCount/2)+1) - userDownvotes)+" more people must downvote before the track is skipped.");

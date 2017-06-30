@@ -50,22 +50,24 @@ public class Commands {
         for (Command cmd : commands) {
             if (cmd.getName().equals(command)){
                 if (cmd instanceof StaticCommand){
+                    log.log(BotLog.TYPE.COMMAND, command+" has been issued.");
                     ((StaticCommand)cmd).execute();
                     return;
                 } else if (!cmd.canUserExecute(context.getUser(), context.getGuild())){
-                    log.log(BotLog.TYPE.ERROR, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.noPermission.log"), context.getUser().getName(), cmd.getName()));
+                    log.log(BotLog.TYPE.COMMAND, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.noPermission.log"), context.getUser().getName(), cmd.getName()));
                     context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.noPermission.message"), command));
                     return;
                 } else if (cmd instanceof ContextCommand){
+                    log.log(BotLog.TYPE.COMMAND, context.getGuild(), context.getUser().getName()+" has issued the command: "+command);
                     ((ContextCommand)cmd).execute(context);
                     return;
                 }
             }
         }
         if (context == null){
-            log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("commands.invalidCommand.noContext"), command));
+            log.log(BotLog.TYPE.COMMAND, MessageFormat.format(resourceBundle.getString("commands.invalidCommand.noContext"), command));
         } else {
-            log.log(BotLog.TYPE.ERROR, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.invalidCommand.context"), command, context.getUser().getName()));
+            log.log(BotLog.TYPE.COMMAND, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.invalidCommand.context"), command, context.getUser().getName()));
         }
     }
 

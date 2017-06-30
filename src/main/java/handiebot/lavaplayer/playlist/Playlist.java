@@ -159,7 +159,7 @@ public class Playlist {
      */
     public void load(){
         String path = System.getProperty("user.home")+"/.handiebot/playlist/"+name.replace(" ", "_")+".txt";
-        log.log(BotLog.TYPE.INFO, "Loading playlist from: "+path);
+        log.log(BotLog.TYPE.MUSIC, "Loading playlist from: "+path);
         File playlistFile = new File(path);
         if (playlistFile.exists()){
             try {

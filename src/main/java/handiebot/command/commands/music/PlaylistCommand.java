@@ -9,6 +9,7 @@ import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.util.RequestBuffer;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -159,7 +160,7 @@ public class PlaylistCommand extends ContextCommand {
             playlist.load();
             for (int i = 2; i < context.getArgs().length; i++){
                 playlist.loadTrack(context.getArgs()[i]);
-                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.message"), playlist.getName()));
+                RequestBuffer.request(() -> context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.message"), playlist.getName()))).get();
             }
             playlist.save();
             context.getChannel().sendMessage(playlist.toString());
