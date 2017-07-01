@@ -2,6 +2,7 @@ package handiebot.command;
 
 import handiebot.command.commands.admin.QuitCommand;
 import handiebot.command.commands.admin.SetPrefixCommand;
+import handiebot.command.commands.misc.TengwarCommand;
 import handiebot.command.commands.music.*;
 import handiebot.command.commands.support.HelpCommand;
 import handiebot.command.commands.support.InfoCommand;
@@ -39,6 +40,7 @@ public class Commands {
         commands.add(new InfoCommand());
         commands.add(new SetPrefixCommand());
         commands.add(new QuitCommand());
+        commands.add(new TengwarCommand());
     }
 
     /**
