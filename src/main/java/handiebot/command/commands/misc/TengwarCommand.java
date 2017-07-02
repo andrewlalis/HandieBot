@@ -31,15 +31,15 @@ public class TengwarCommand extends ContextCommand {
                 String result = Translator.translateToTengwar(input);
                 try {
                     context.getChannel().sendFile("Raw text: `" +result+'`', TengwarImageGenerator.generateImage(result,
-                            400,
-                            20f,
+                            600,
+                            24f,
                             false,
                             false,
                             System.getProperty("user.home")+"/.handiebot/tengwarTemp.png"));
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-            } else if (context.getArgs()[0].equalsIgnoreCase("to")){
+            } else if (context.getArgs()[0].equalsIgnoreCase("from")){
                 context.getChannel().sendMessage(Translator.translateToEnglish(input));
             }
         } else {

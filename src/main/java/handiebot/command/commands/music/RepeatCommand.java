@@ -25,7 +25,7 @@ public class RepeatCommand extends ContextCommand {
     @Override
     public void execute(CommandContext context) {
         if (context.getArgs().length == 1 && Commands.hasPermission(context, 8)){
-            boolean shouldRepeat = Boolean.getBoolean(context.getArgs()[0].toLowerCase());
+            boolean shouldRepeat = (context.getArgs()[0].toLowerCase().equals("true"));
             HandieBot.musicPlayer.setRepeat(context.getGuild(), shouldRepeat);
         } else {
             context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("player.getRepeat"), HandieBot.musicPlayer.isRepeating(context.getGuild())));

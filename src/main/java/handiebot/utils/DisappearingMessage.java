@@ -5,6 +5,7 @@ import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.Permissions;
+import sx.blah.discord.util.RequestBuffer;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
@@ -29,7 +30,7 @@ public class DisappearingMessage extends Thread implements Runnable {
             e.printStackTrace();
         }
         if (canDelete(sentMessage))
-            sentMessage.delete();
+            RequestBuffer.request(() -> sentMessage.delete());
     }
 
     /**
@@ -45,7 +46,7 @@ public class DisappearingMessage extends Thread implements Runnable {
                 e.printStackTrace();
             }
             if (canDelete(message))
-                message.delete();
+                RequestBuffer.request(() -> message.delete());
         }).start();
     }
 

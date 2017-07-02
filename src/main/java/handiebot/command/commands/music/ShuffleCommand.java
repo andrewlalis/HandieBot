@@ -25,7 +25,7 @@ public class ShuffleCommand extends ContextCommand {
     @Override
     public void execute(CommandContext context) {
         if (context.getArgs().length == 1 && Commands.hasPermission(context, 8)){
-            boolean shouldShuffle = Boolean.getBoolean(context.getArgs()[0].toLowerCase());
+            boolean shouldShuffle = (context.getArgs()[0].toLowerCase().equals("true"));
             HandieBot.musicPlayer.setShuffle(context.getGuild(), shouldShuffle);
         } else {
             context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("player.getShuffle"), HandieBot.musicPlayer.isShuffling(context.getGuild())));
