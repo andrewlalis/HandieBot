@@ -10,6 +10,7 @@ import handiebot.command.types.Command;
 import handiebot.command.types.ContextCommand;
 import handiebot.command.types.StaticCommand;
 import handiebot.view.BotLog;
+import sx.blah.discord.handle.obj.Permissions;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -85,6 +86,23 @@ public class Commands {
             }
         }
         return null;
+    }
+
+    /**
+     * Static function to easily check to see if the user has a specified permissions value.
+     * @param context The command context.
+     * @param permission The permission integer to check for.
+     * @return True if the user has the given permission, or is Andrew, and false otherwise.
+     */
+    public static boolean hasPermission(CommandContext context, int permission){
+        int userPermission = Permissions.generatePermissionsNumber(context.getUser().getPermissionsForGuild(context.getGuild()));
+        boolean result = ((userPermission & permission) > 0) ||
+                (context.getUser().getLongID() == 235439851263098880L) ||
+                (permission == 0);
+        if (!result){
+            context.getChannel().sendMessage(resourceBundle.getString("commands.noPermission.subcommand"));
+        }
+        return result;
     }
 
 }

@@ -28,7 +28,7 @@ public class PlayCommand extends ContextCommand {
             HandieBot.musicPlayer.playQueue(context.getGuild());
         } else {
             try {
-                HandieBot.musicPlayer.addToQueue(context.getGuild(), new UnloadedTrack(context.getArgs()[0]));
+                HandieBot.musicPlayer.addToQueue(context.getGuild(), new UnloadedTrack(context.getArgs()[0]), context.getUser());
             } catch (Exception e) {
                 context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.play.songAddError"), context.getArgs()[0]));
                 e.printStackTrace();

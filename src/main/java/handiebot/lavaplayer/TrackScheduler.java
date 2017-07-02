@@ -34,6 +34,7 @@ public class TrackScheduler extends AudioEventAdapter {
     private final AudioPlayer player;
 
     private Playlist activePlaylist;
+    private long activePlayMessageId;
 
     private boolean repeat = true;
     private boolean shuffle = false;
@@ -62,6 +63,10 @@ public class TrackScheduler extends AudioEventAdapter {
 
     public Playlist getActivePlaylist(){
         return this.activePlaylist;
+    }
+
+    public long getPlayMessageId(){
+        return this.activePlayMessageId;
     }
 
     /**
@@ -191,6 +196,7 @@ public class TrackScheduler extends AudioEventAdapter {
         List<IChannel> channels = this.guild.getChannelsByName(MusicPlayer.CHANNEL_NAME.toLowerCase());
         if (channels.size() > 0){
             IMessage message = channels.get(0).sendMessage(MessageFormat.format(":arrow_forward: "+resourceBundle.getString("trackSchedule.nowPlaying"), track.getInfo().title, new UnloadedTrack(track).getFormattedDuration()));
+            this.activePlayMessageId = message.getLongID();
             RequestBuffer.request(() -> {message.addReaction(":thumbsup:");}).get();
             RequestBuffer.request(() -> {message.addReaction(":thumbsdown:");}).get();
         }

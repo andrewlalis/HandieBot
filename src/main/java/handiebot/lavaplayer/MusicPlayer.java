@@ -11,6 +11,7 @@ import handiebot.utils.Pastebin;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 import sx.blah.discord.util.EmbedBuilder;
 
@@ -131,6 +132,15 @@ public class MusicPlayer {
     }
 
     /**
+     * Returns whether or not repeat is set for a guild.
+     * @param guild The guild to check for.
+     * @return True if repeating is enabled, false otherwise.
+     */
+    public boolean isRepeating(IGuild guild){
+        return getMusicManager(guild).scheduler.isRepeating();
+    }
+
+    /**
      * Toggles shuffling for a specific guild.
      * @param guild The guild to toggle shuffling for.
      */
@@ -148,6 +158,15 @@ public class MusicPlayer {
         String message = MessageFormat.format(resourceBundle.getString("player.setShuffle"), getMusicManager(guild).scheduler.isShuffling());
         log.log(BotLog.TYPE.MUSIC, guild, message);
         getChatChannel(guild).sendMessage(":twisted_rightwards_arrows: "+message);
+    }
+
+    /**
+     * Returns whether or not shuffle is set for a guild.
+     * @param guild The guild to check for.
+     * @return True if shuffling is enabled, false otherwise.
+     */
+    public boolean isShuffling(IGuild guild){
+        return getMusicManager(guild).scheduler.isShuffling();
     }
 
     /**
@@ -184,9 +203,11 @@ public class MusicPlayer {
 
     /**
      * Adds a track to the queue and sends a message to the appropriate channel notifying users.
+     * @param guild The guild to add the song to.
      * @param track The track to queue.
+     * @param user the user who added the song.
      */
-    public void addToQueue(IGuild guild, UnloadedTrack track){
+    public void addToQueue(IGuild guild, UnloadedTrack track, IUser user){
         IVoiceChannel voiceChannel = getVoiceChannel(guild);
         if (voiceChannel != null){
             if (!voiceChannel.isConnected()) {
@@ -197,7 +218,7 @@ public class MusicPlayer {
             //Build message.
             StringBuilder sb = new StringBuilder();
             if (timeUntilPlay > 0) {
-                sb.append(MessageFormat.format(resourceBundle.getString("player.addedToQueue"), track.getTitle()));
+                sb.append(MessageFormat.format(resourceBundle.getString("player.addedToQueue"), user.getName(), track.getTitle()));
             }
             //If there's some tracks in the queue, get the time until this one plays.
             if (timeUntilPlay > 0){

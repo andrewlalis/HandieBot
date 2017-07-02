@@ -2,6 +2,7 @@ package handiebot.command.commands.music;
 
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
+import handiebot.command.Commands;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.view.BotLog;
@@ -16,7 +17,7 @@ import static handiebot.HandieBot.resourceBundle;
  * Queue command to display the active queue.
  */
 public class QueueCommand extends ContextCommand {
-    //TODO: Add specific permissions per argument.
+
     public QueueCommand() {
         super("queue",
                 "[all|clear|save]",
@@ -35,15 +36,19 @@ public class QueueCommand extends ContextCommand {
                     HandieBot.musicPlayer.showQueueList(context.getGuild(), true);
                     break;
                 case ("clear"):
-                    HandieBot.musicPlayer.clearQueue(context.getGuild());
-                    log.log(BotLog.TYPE.MUSIC, context.getGuild(), resourceBundle.getString("commands.command.queue.clear"));
+                    if (Commands.hasPermission(context, 8)) {
+                        HandieBot.musicPlayer.clearQueue(context.getGuild());
+                        log.log(BotLog.TYPE.MUSIC, context.getGuild(), resourceBundle.getString("commands.command.queue.clear"));
+                    }
                     break;
                 case ("save"):
-                    Playlist p = HandieBot.musicPlayer.getAllSongsInQueue(context.getGuild());
-                    p.setName(context.getArgs()[1]);
-                    p.save();
-                    context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.queue.save.message"), p.getTrackCount(), p.getName()));
-                    log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.queue.save.log"), p.getName()));
+                    if (context.getArgs().length == 2 && Commands.hasPermission(context, 8)) {
+                        Playlist p = HandieBot.musicPlayer.getAllSongsInQueue(context.getGuild());
+                        p.setName(context.getArgs()[1]);
+                        p.save();
+                        context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.queue.save.message"), p.getTrackCount(), p.getName()));
+                        log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.queue.save.log"), p.getName()));
+                    }
                     break;
             }
         } else {

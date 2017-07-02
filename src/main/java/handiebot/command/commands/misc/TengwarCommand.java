@@ -16,7 +16,7 @@ public class TengwarCommand extends ContextCommand {
 
     public TengwarCommand() {
         super("tengwar",
-                "<translateTo|translateFrom> <TEXT>",
+                "<to|from> <TEXT>",
                 resourceBundle.getString("commands.command.tengwar.description"),
                 0);
     }
@@ -27,19 +27,19 @@ public class TengwarCommand extends ContextCommand {
             context.getChannel().sendMessage(this.getUsage(context.getGuild()));
         } else if (context.getArgs().length >= 2){
             String input = readTextFromArgs(context.getArgs());
-            if (context.getArgs()[0].equalsIgnoreCase("translateTo")){
+            if (context.getArgs()[0].equalsIgnoreCase("to")){
                 String result = Translator.translateToTengwar(input);
                 try {
-                    context.getChannel().sendFile(TengwarImageGenerator.generateImage(result,
-                            500,
-                            24f,
+                    context.getChannel().sendFile("Raw text: `" +result+'`', TengwarImageGenerator.generateImage(result,
+                            400,
+                            20f,
                             false,
                             false,
                             System.getProperty("user.home")+"/.handiebot/tengwarTemp.png"));
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-            } else if (context.getArgs()[0].equalsIgnoreCase("translateFrom")){
+            } else if (context.getArgs()[0].equalsIgnoreCase("to")){
                 context.getChannel().sendMessage(Translator.translateToEnglish(input));
             }
         } else {

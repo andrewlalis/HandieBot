@@ -23,7 +23,7 @@ import static handiebot.HandieBot.resourceBundle;
  * Command to manipulate playlists.
  */
 public class PlaylistCommand extends ContextCommand {
-//TODO: Add specific permissions per argument.
+
     public PlaylistCommand(){
         super("playlist",
                 "<create|delete|show|add|remove|rename|move|play> [PLAYLIST]",
@@ -36,7 +36,7 @@ public class PlaylistCommand extends ContextCommand {
                         "\t`rename <PLAYLIST> <NEWNAME>` - "+resourceBundle.getString("commands.command.playlist.description.rename")+"\n" +
                         "\t`move <PLAYLIST> <OLDINDEX> <NEWINDEX>` - "+resourceBundle.getString("commands.command.playlist.description.move")+"\n" +
                         "\t`play <PLAYLIST>` - "+resourceBundle.getString("commands.command.playlist.description.play"),
-                0);
+                8);
     }
 
     @Override

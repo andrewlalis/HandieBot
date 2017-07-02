@@ -16,7 +16,7 @@ import static handiebot.HandieBot.log;
  * Class which handles user reactions to songs and performs necessary actions.
  */
 public class ReactionHandler {
-//TODO: Fix so only reactions on the most recent song count!
+
     public static final String thumbsUp = "\uD83D\uDC4D";
     public static final String thumbsDown = "\uD83D\uDC4E";
 
@@ -42,12 +42,15 @@ public class ReactionHandler {
      */
     private static void onDownvote(CommandContext context, IMessage message){
         //Filter out reactions to previous messages.
-        if (!message.getContent().contains(HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.getPlayingTrack().getTitle())){
+        if (message.getLongID() != HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.getPlayMessageId()){
             return;
         }
         List<IUser> usersHere = HandieBot.musicPlayer.getVoiceChannel(context.getGuild()).getConnectedUsers();
         //Remove the bot from the list of users in the voice channel.
-        usersHere.removeIf(user -> user.getLongID() == HandieBot.client.getOurUser().getLongID());
+        usersHere.removeIf(user -> (user.getLongID() == HandieBot.client.getOurUser().getLongID()) ||
+                (user.getVoiceStateForGuild(context.getGuild()).isDeafened()) ||
+                (user.getVoiceStateForGuild(context.getGuild()).isSelfDeafened()));
+
         int userCount = usersHere.size();
         int userDownvotes = 0;
         IReaction reaction = message.getReactionByUnicode(thumbsDown);
@@ -59,8 +62,6 @@ public class ReactionHandler {
         if (userDownvotes > (userCount/2)){
             log.log(BotLog.TYPE.MUSIC, context.getGuild(), "Users voted to skip the current song.");
             HandieBot.musicPlayer.skipTrack(context.getGuild());
-        } else if (userDownvotes > 0) {
-            context.getChannel().sendMessage((((userCount/2)+1) - userDownvotes)+" more people must downvote before the track is skipped.");
         }
     }
 
