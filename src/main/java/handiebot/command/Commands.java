@@ -25,7 +25,7 @@ import static handiebot.HandieBot.resourceBundle;
  */
 public class Commands {
 
-    public static List<Command> commands = new ArrayList<Command>();
+    public static List<Command> commands = new ArrayList<>();
 
     static {
         //Music commands.

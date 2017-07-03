@@ -197,8 +197,8 @@ public class TrackScheduler extends AudioEventAdapter {
         if (channels.size() > 0){
             IMessage message = channels.get(0).sendMessage(MessageFormat.format(":arrow_forward: "+resourceBundle.getString("trackSchedule.nowPlaying"), track.getInfo().title, new UnloadedTrack(track).getFormattedDuration()));
             this.activePlayMessageId = message.getLongID();
-            RequestBuffer.request(() -> {message.addReaction(":thumbsup:");}).get();
-            RequestBuffer.request(() -> {message.addReaction(":thumbsdown:");}).get();
+            RequestBuffer.request(() -> message.addReaction(":thumbsup:")).get();
+            RequestBuffer.request(() -> message.addReaction(":thumbsdown:")).get();
         }
     }
 

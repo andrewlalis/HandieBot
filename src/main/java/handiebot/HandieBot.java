@@ -16,10 +16,7 @@ import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RateLimitException;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * @author Andrew Lalis
@@ -33,7 +30,7 @@ public class HandieBot {
     private static final String TOKEN = "MjgzNjUyOTg5MjEyNjg4Mzg0.C45A_Q.506b0G6my1FEFa7_YY39lxLBHUY";
     private static boolean USE_GUI = true;
 
-    public static ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings");
+    public static final ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings");
 
     //Discord client object.
     public static IDiscordClient client;
@@ -46,7 +43,7 @@ public class HandieBot {
     public static MusicPlayer musicPlayer;
 
     //List of all permissions needed to operate this bot.
-    private static int permissionsNumber = 0;
+    private static final int permissionsNumber;
     static {
         List<Permissions> requiredPermissions = new ArrayList<>();
         requiredPermissions.add(Permissions.CHANGE_NICKNAME);
@@ -87,12 +84,12 @@ public class HandieBot {
 
         musicPlayer = new MusicPlayer();
 
-        if (args.length >= 1) {
-            if (args[0].equalsIgnoreCase("-nogui")){
-                System.out.println("Starting with no GUI.");
-                USE_GUI = false;
-                log = new BotLog(null);
-            }
+        List<String> argsList = Arrays.asList(args);
+
+        if (argsList.contains("-nogui")) {
+            System.out.println("Starting with no GUI.");
+            USE_GUI = false;
+            log = new BotLog(null);
         }
 
         if (USE_GUI){

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Random;
 
 import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
@@ -21,7 +22,7 @@ import static handiebot.HandieBot.log;
  * on the playlist.
  */
 public class Playlist {
-//TODO: externalize strings
+
     private String name;
 
     private List<UnloadedTrack> tracks;
@@ -186,7 +187,7 @@ public class Playlist {
      */
     public static List<String> getAvailablePlaylists(){
         File playlistFolder = new File(System.getProperty("user.home")+"/.handiebot/playlist");
-        List<String> names = new ArrayList<String>(Arrays.asList(playlistFolder.list()));
+        @SuppressWarnings("ConstantConditions") List<String> names = new ArrayList<>(Arrays.asList(playlistFolder.list()));
         for (int i = 0; i < names.size(); i++){
             String name = names.get(i);
             name = name.replace(".txt", "");
@@ -215,7 +216,7 @@ public class Playlist {
     public String toString(){
         StringBuilder sb = new StringBuilder("Playlist: "+this.getName()+'\n');
         if (this.getTrackCount() == 0){
-            sb.append("There are no songs in this playlist.");
+            sb.append(resourceBundle.getString("playlist.empty"));
         } else {
             for (int i = 0; i < this.getTrackCount(); i++) {
                 sb.append(i + 1).append(". ").append(this.tracks.get(i).getTitle()).append(" ").append(this.tracks.get(i).getFormattedDuration()).append("\n");

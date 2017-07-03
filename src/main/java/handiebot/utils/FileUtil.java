@@ -7,17 +7,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
  * Class to simplify file operations.
  */
 public class FileUtil {
-//TODO: externalize strings
+
     public static String getDataDirectory(){
         return System.getProperty("user.home")+"/.handiebot/";
     }
@@ -39,12 +41,12 @@ public class FileUtil {
             try {
                 boolean success = file.createNewFile();
                 if (!success) {
-                    log.log(BotLog.TYPE.ERROR, "Unable to create file. "+file.getAbsolutePath());
+                    log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("fileutil.fileCreateError"), file.getAbsolutePath()));
                     return;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                log.log(BotLog.TYPE.ERROR, "Unable to create file. "+file.getAbsolutePath());
+                log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("fileutil.fileCreateError"), file.getAbsolutePath()));
                 return;
             }
         }
@@ -54,7 +56,7 @@ public class FileUtil {
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            log.log(BotLog.TYPE.ERROR, "Unable to write to file. "+file.getAbsolutePath());
+            log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("fileutil.writeError"), file.getAbsolutePath()));
         }
     }
 

@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class Pastebin {
 
-    private static String PASTEBIN_KEY = "769adc01154922ece448cabd7a33b57c";
+    private static final String PASTEBIN_KEY = "769adc01154922ece448cabd7a33b57c";
 
     public static String paste(String title, String content){
         HttpClient client = HttpClients.createDefault();

@@ -25,9 +25,7 @@ public class CommandLineListener implements KeyListener {
             commandLine.setText(null);
             String command = words[0];
             String[] args = new String[words.length-1];
-            for (int i = 1; i < words.length; i++) {
-                args[i-1] = words[i];
-            }
+            System.arraycopy(words, 1, args, 0, words.length - 1);
             executeCommand(command, args);
         }
     }

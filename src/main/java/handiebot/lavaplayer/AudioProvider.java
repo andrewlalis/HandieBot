@@ -6,7 +6,8 @@ import sx.blah.discord.handle.audio.AudioEncodingType;
 import sx.blah.discord.handle.audio.IAudioProvider;
 
 /**
- * Created by Andrew's Computer on 18-Jun-17.
+ * @author Andrew Lalis
+ * Class to provide audio bytes to the music player.
  */
 public class AudioProvider implements IAudioProvider {
     private final AudioPlayer audioPlayer;

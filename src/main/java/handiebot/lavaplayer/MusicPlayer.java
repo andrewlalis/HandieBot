@@ -175,6 +175,7 @@ public class MusicPlayer {
     public void showQueueList(IGuild guild, boolean showAll) {
         List<UnloadedTrack> tracks = getMusicManager(guild).scheduler.queueList();
         if (tracks.size() == 0) {
+            //noinspection ConstantConditions
             getChatChannel(guild).sendMessage(MessageFormat.format(resourceBundle.getString("player.queueEmpty"), Commands.get("play").getUsage()));
         } else {
             if (tracks.size() > 10 && showAll) {
@@ -295,9 +296,7 @@ public class MusicPlayer {
      * Performs the same functions as stop, but with every guild.
      */
     public void quitAll(){
-        this.musicManagers.forEach((guild, musicManager) -> {
-            musicManager.scheduler.stop();
-        });
+        this.musicManagers.forEach((guild, musicManager) -> musicManager.scheduler.stop());
         this.playerManager.shutdown();
     }
 

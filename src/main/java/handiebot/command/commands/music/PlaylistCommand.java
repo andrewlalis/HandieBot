@@ -286,11 +286,12 @@ public class PlaylistCommand extends ContextCommand {
      * @return True if the playlist exists, false otherwise.
      */
     private boolean checkForPlaylist(CommandContext context){
-        if (!Playlist.playlistExists(context.getArgs()[1])){
+        if (Playlist.playlistExists(context.getArgs()[1])){
+            return true;
+        } else {
             new DisappearingMessage(context.getChannel(), MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.playlistDoesNotExist"), getPlaylistShowString(context)), 3000);
             return false;
         }
-        return true;
     }
 
     /**

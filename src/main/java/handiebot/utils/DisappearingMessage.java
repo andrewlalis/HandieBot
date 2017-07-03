@@ -30,7 +30,7 @@ public class DisappearingMessage extends Thread implements Runnable {
             e.printStackTrace();
         }
         if (canDelete(sentMessage))
-            RequestBuffer.request(() -> sentMessage.delete());
+            RequestBuffer.request(sentMessage::delete);
     }
 
     /**
@@ -46,7 +46,7 @@ public class DisappearingMessage extends Thread implements Runnable {
                 e.printStackTrace();
             }
             if (canDelete(message))
-                RequestBuffer.request(() -> message.delete());
+                RequestBuffer.request(message::delete);
         }).start();
     }
 

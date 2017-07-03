@@ -77,9 +77,7 @@ public class CommandHandler {
         String[] words = message.getContent().split(" ");
         if (words[0].startsWith(PREFIXES.get(message.getGuild()))){
             String[] args = new String[words.length-1];
-            for (int i = 0; i < words.length-1; i++){
-                args[i] = words[i+1];
-            }
+            System.arraycopy(words, 1, args, 0, words.length - 1);
             return args;
         }
         return new String[0];
