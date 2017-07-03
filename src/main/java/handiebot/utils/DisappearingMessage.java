@@ -1,14 +1,21 @@
 package handiebot.utils;
 
+import handiebot.HandieBot;
+import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.Permissions;
+import sx.blah.discord.util.RequestBuffer;
+
+import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
  * Creates a message on a channel that will disappear after some time.
  */
 public class DisappearingMessage extends Thread implements Runnable {
-
+    
     /**
      * Creates a new disappearing message that times out after some time.
      * @param channel The channel to write the message in.
@@ -22,7 +29,8 @@ public class DisappearingMessage extends Thread implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        sentMessage.delete();
+        if (canDelete(sentMessage))
+            RequestBuffer.request(sentMessage::delete);
     }
 
     /**
@@ -34,11 +42,26 @@ public class DisappearingMessage extends Thread implements Runnable {
         new Thread(() -> {
             try {
                 sleep(timeout);
-                message.delete();
             } catch (InterruptedException e){
                 e.printStackTrace();
             }
+            if (canDelete(message))
+                RequestBuffer.request(message::delete);
         }).start();
+    }
+
+    /**
+     * Check to see if it is possible to delete a message before doing so.
+     * @param message The message that may be deleted.
+     * @return True if it is safe to delete, false otherwise.
+     */
+    private static boolean canDelete(IMessage message){
+        if (HandieBot.hasPermission(Permissions.MANAGE_MESSAGES, message.getChannel())){
+            return true;
+        } else {
+            log.log(BotLog.TYPE.ERROR, message.getGuild(), resourceBundle.getString("log.deleteMessageError"));
+            return false;
+        }
     }
 
 }

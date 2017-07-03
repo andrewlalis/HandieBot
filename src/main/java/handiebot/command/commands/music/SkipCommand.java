@@ -4,6 +4,8 @@ import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
 
+import static handiebot.HandieBot.resourceBundle;
+
 /**
  * @author Andrew Lalis
  * Skips the current song, if there is one playing.
@@ -13,7 +15,7 @@ public class SkipCommand extends ContextCommand {
     public SkipCommand() {
         super("skip",
                 "",
-                "Skips the current song.",
+                resourceBundle.getString("commands.command.skip.description"),
                 8);
     }
 

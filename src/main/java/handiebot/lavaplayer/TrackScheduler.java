@@ -15,18 +15,26 @@ import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
+ * Class to actually play music.
+ * <p>
+ *     It holds an active playlist which it uses to pull songs from, and through the {@code MusicPlayer}, the
+ *     playlist can be modified.
+ * </p>
  */
 public class TrackScheduler extends AudioEventAdapter {
 
     private final AudioPlayer player;
 
     private Playlist activePlaylist;
+    private long activePlayMessageId;
 
     private boolean repeat = true;
     private boolean shuffle = false;
@@ -55,6 +63,10 @@ public class TrackScheduler extends AudioEventAdapter {
 
     public Playlist getActivePlaylist(){
         return this.activePlaylist;
+    }
+
+    public long getPlayMessageId(){
+        return this.activePlayMessageId;
     }
 
     /**
@@ -180,12 +192,13 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        log.log(BotLog.TYPE.MUSIC, this.guild, "Started audio track: "+track.getInfo().title);
+        log.log(BotLog.TYPE.MUSIC, this.guild, MessageFormat.format(resourceBundle.getString("trackSchedule.trackStarted"), track.getInfo().title));
         List<IChannel> channels = this.guild.getChannelsByName(MusicPlayer.CHANNEL_NAME.toLowerCase());
         if (channels.size() > 0){
-            IMessage message = channels.get(0).sendMessage("Now playing: **"+track.getInfo().title+"** "+new UnloadedTrack(track).getFormattedDuration()+"\n"+track.getInfo().uri);
-            RequestBuffer.request(() -> {message.addReaction(":thumbsup:");}).get();
-            RequestBuffer.request(() -> {message.addReaction(":thumbsdown:");}).get();
+            IMessage message = channels.get(0).sendMessage(MessageFormat.format(":arrow_forward: "+resourceBundle.getString("trackSchedule.nowPlaying"), track.getInfo().title, new UnloadedTrack(track).getFormattedDuration()));
+            this.activePlayMessageId = message.getLongID();
+            RequestBuffer.request(() -> message.addReaction(":thumbsup:")).get();
+            RequestBuffer.request(() -> message.addReaction(":thumbsdown:")).get();
         }
     }
 

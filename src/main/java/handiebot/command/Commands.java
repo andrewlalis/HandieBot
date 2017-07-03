@@ -2,19 +2,22 @@ package handiebot.command;
 
 import handiebot.command.commands.admin.QuitCommand;
 import handiebot.command.commands.admin.SetPrefixCommand;
+import handiebot.command.commands.misc.TengwarCommand;
 import handiebot.command.commands.music.*;
 import handiebot.command.commands.support.HelpCommand;
 import handiebot.command.commands.support.InfoCommand;
 import handiebot.command.types.Command;
 import handiebot.command.types.ContextCommand;
 import handiebot.command.types.StaticCommand;
-import handiebot.utils.DisappearingMessage;
 import handiebot.view.BotLog;
+import sx.blah.discord.handle.obj.Permissions;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.resourceBundle;
 
 /**
  * @author Andrew Lalis
@@ -22,7 +25,7 @@ import static handiebot.HandieBot.log;
  */
 public class Commands {
 
-    public static List<Command> commands = new ArrayList<Command>();
+    public static List<Command> commands = new ArrayList<>();
 
     static {
         //Music commands.
@@ -38,6 +41,7 @@ public class Commands {
         commands.add(new InfoCommand());
         commands.add(new SetPrefixCommand());
         commands.add(new QuitCommand());
+        commands.add(new TengwarCommand());
     }
 
     /**
@@ -48,32 +52,25 @@ public class Commands {
     public static void executeCommand(String command, CommandContext context){
         for (Command cmd : commands) {
             if (cmd.getName().equals(command)){
-                if (!cmd.canUserExecute(context.getUser(), context.getGuild())){
-                    log.log(BotLog.TYPE.ERROR, context.getGuild(), "User "+context.getUser().getName()+" does not have permission to execute "+cmd.getName());
-                    new DisappearingMessage(context.getChannel(), "You do not have permission to use that command.", 5000);
-                }
-                if (cmd instanceof ContextCommand){
-                    ((ContextCommand)cmd).execute(context);
-                    return;
-                } else if (cmd instanceof StaticCommand){
+                if (cmd instanceof StaticCommand){
+                    log.log(BotLog.TYPE.COMMAND, command+" has been issued.");
                     ((StaticCommand)cmd).execute();
+                    return;
+                } else if (!cmd.canUserExecute(context.getUser(), context.getGuild())){
+                    log.log(BotLog.TYPE.COMMAND, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.noPermission.log"), context.getUser().getName(), cmd.getName()));
+                    context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.noPermission.message"), command));
+                    return;
+                } else if (cmd instanceof ContextCommand){
+                    log.log(BotLog.TYPE.COMMAND, context.getGuild(), context.getUser().getName()+" has issued the command: "+command);
+                    ((ContextCommand)cmd).execute(context);
                     return;
                 }
             }
         }
-        log.log(BotLog.TYPE.ERROR, context.getGuild(), "Invalid command: "+command+" issued by "+context.getUser().getName());
-    }
-
-    /**
-     * Attempts to execute a command.
-     * @param command The command to execute.
-     * @param context The command context.
-     */
-    public static void executeCommand(Command command, CommandContext context){
-        if (command instanceof ContextCommand && context != null){
-            ((ContextCommand)command).execute(context);
-        } else if (command instanceof StaticCommand){
-            ((StaticCommand)command).execute();
+        if (context == null){
+            log.log(BotLog.TYPE.COMMAND, MessageFormat.format(resourceBundle.getString("commands.invalidCommand.noContext"), command));
+        } else {
+            log.log(BotLog.TYPE.COMMAND, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.invalidCommand.context"), command, context.getUser().getName()));
         }
     }
 
@@ -89,6 +86,23 @@ public class Commands {
             }
         }
         return null;
+    }
+
+    /**
+     * Static function to easily check to see if the user has a specified permissions value.
+     * @param context The command context.
+     * @param permission The permission integer to check for.
+     * @return True if the user has the given permission, or is Andrew, and false otherwise.
+     */
+    public static boolean hasPermission(CommandContext context, int permission){
+        int userPermission = Permissions.generatePermissionsNumber(context.getUser().getPermissionsForGuild(context.getGuild()));
+        boolean result = ((userPermission & permission) > 0) ||
+                (context.getUser().getLongID() == 235439851263098880L) ||
+                (permission == 0);
+        if (!result){
+            context.getChannel().sendMessage(resourceBundle.getString("commands.noPermission.subcommand"));
+        }
+        return result;
     }
 
 }

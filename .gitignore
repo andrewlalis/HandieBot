@@ -1,1 +1,4 @@
-!.jar
+.idea/
+modules/
+src/test/
+target/

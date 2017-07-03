@@ -15,8 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static handiebot.HandieBot.client;
-import static handiebot.HandieBot.log;
+import static handiebot.HandieBot.*;
 
 /**
  * @author Andrew Lalis
@@ -78,9 +77,7 @@ public class CommandHandler {
         String[] words = message.getContent().split(" ");
         if (words[0].startsWith(PREFIXES.get(message.getGuild()))){
             String[] args = new String[words.length-1];
-            for (int i = 0; i < words.length-1; i++){
-                args[i] = words[i+1];
-            }
+            System.arraycopy(words, 1, args, 0, words.length - 1);
             return args;
         }
         return new String[0];
@@ -100,7 +97,7 @@ public class CommandHandler {
                 prefixes.put(client.getGuildByID(Long.parseLong(words[0])), words[1]);
             }
         }
-        log.log(BotLog.TYPE.INFO, "Loaded prefixes.");
+        log.log(BotLog.TYPE.INFO, resourceBundle.getString("commands.command.setPrefix.loadedPrefixes"));
         return prefixes;
     }
 
@@ -114,7 +111,7 @@ public class CommandHandler {
             lines.add(Long.toString(entry.getKey().getLongID())+" / "+entry.getValue());
         }
         FileUtil.writeLinesToFile(lines, prefixFile);
-        log.log(BotLog.TYPE.INFO, "Saved prefixes.");
+        log.log(BotLog.TYPE.INFO, resourceBundle.getString("commands.command.setPrefix.savedPrefixes"));
     }
 
 }

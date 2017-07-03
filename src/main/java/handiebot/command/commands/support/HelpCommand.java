@@ -6,6 +6,8 @@ import handiebot.command.types.Command;
 import handiebot.command.types.ContextCommand;
 import sx.blah.discord.handle.obj.IPrivateChannel;
 
+import static handiebot.HandieBot.resourceBundle;
+
 /**
  * @author Andrew Lalis
  * Class for sending help/command info to a user if they so desire it.
@@ -15,7 +17,7 @@ public class HelpCommand extends ContextCommand {
     public HelpCommand() {
         super("help",
                 "",
-                "Displays a list of commands and what they do.",
+                resourceBundle.getString("commands.command.help.description"),
                 0);
     }
 

@@ -42,7 +42,9 @@ public class BotLog {
 
     public BotLog(JTextPane outputArea){
         this.outputArea = outputArea;
-        initStyles();
+        if (outputArea != null) {
+            initStyles();
+        }
     }
 
     /**
@@ -70,12 +72,15 @@ public class BotLog {
         Date date = new Date(System.currentTimeMillis());
         DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
         String dateFormatted = formatter.format(date);
-        try {
-            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), dateFormatted, this.defaultStyle);
-            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '['+type.name()+"] ", this.logStyles.get(type));
-            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), message+'\n', this.defaultStyle);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
+        System.out.println(dateFormatted+'['+type.name()+"] "+message);
+        if (this.outputArea != null) {
+            try {
+                this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), dateFormatted, this.defaultStyle);
+                this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '[' + type.name() + "] ", this.logStyles.get(type));
+                this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), message + '\n', this.defaultStyle);
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -86,16 +91,23 @@ public class BotLog {
      * @param message The content of the message.
      */
     public void log(TYPE type, IGuild guild, String message){
+        if (guild == null){
+            log(type, message);
+            return;
+        }
         Date date = new Date(System.currentTimeMillis());
         DateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
         String dateFormatted = formatter.format(date);
-        try {
-            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), dateFormatted, this.defaultStyle);
-            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '['+type.name()+']', this.logStyles.get(type));
-            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '['+guild.getName()+"] ", this.defaultStyle);
-            this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), message+'\n', this.defaultStyle);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
+        System.out.println(dateFormatted+'['+type.name()+"]["+guild.getName()+"] "+message);
+        if (this.outputArea != null) {
+            try {
+                this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), dateFormatted, this.defaultStyle);
+                this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '[' + type.name() + ']', this.logStyles.get(type));
+                this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), '[' + guild.getName() + "] ", this.defaultStyle);
+                this.outputArea.getStyledDocument().insertString(this.outputArea.getStyledDocument().getLength(), message + '\n', this.defaultStyle);
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
         }
     }
 

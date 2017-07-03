@@ -51,7 +51,7 @@ public abstract class Command {
      */
     public boolean canUserExecute(IUser user, IGuild guild){
         int userPermissions = Permissions.generatePermissionsNumber(user.getPermissionsForGuild(guild));
-        return ((this.permissionsRequired & userPermissions) > 0) || (user.getLongID() == 235439851263098880L);
+        return ((this.permissionsRequired & userPermissions) > 0) || (user.getLongID() == 235439851263098880L) || (this.permissionsRequired == 0);
     }
 
 }
