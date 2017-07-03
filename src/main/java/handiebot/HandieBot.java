@@ -3,6 +3,7 @@ package handiebot;
 import handiebot.command.CommandHandler;
 import handiebot.command.ReactionHandler;
 import handiebot.lavaplayer.MusicPlayer;
+import handiebot.utils.YoutubeSearch;
 import handiebot.view.BotLog;
 import handiebot.view.BotWindow;
 import sx.blah.discord.api.ClientBuilder;
@@ -101,6 +102,7 @@ public class HandieBot {
         client = new ClientBuilder().withToken(TOKEN).build();
         client.getDispatcher().registerListener(new HandieBot());
         client.login();
+        YoutubeSearch.query("two steps from hell");
     }
 
     /**

@@ -6,13 +6,10 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import handiebot.command.Commands;
 import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
-import handiebot.utils.DisappearingMessage;
+import handiebot.utils.MessageUtils;
 import handiebot.utils.Pastebin;
 import handiebot.view.BotLog;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.handle.obj.IVoiceChannel;
+import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.text.MessageFormat;
@@ -183,7 +180,8 @@ public class MusicPlayer {
                 if (result != null && result.startsWith("https://pastebin.com/")){
                     log.log(BotLog.TYPE.INFO, guild, MessageFormat.format(resourceBundle.getString("player.queueUploaded"), result));
                     //Only display the pastebin link for 10 minutes.
-                    new DisappearingMessage(getChatChannel(guild), MessageFormat.format(resourceBundle.getString("player.pastebinLink"), result), 600000);
+                    IMessage message = getChatChannel(guild).sendMessage(MessageFormat.format(resourceBundle.getString("player.pastebinLink"), result));
+                    MessageUtils.deleteMessageAfter(600000, message);
                 } else {
                     log.log(BotLog.TYPE.ERROR, guild, MessageFormat.format(resourceBundle.getString("player.pastebinError"), result));
                 }

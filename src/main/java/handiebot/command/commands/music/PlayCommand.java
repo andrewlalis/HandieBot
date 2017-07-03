@@ -1,13 +1,23 @@
 package handiebot.command.commands.music;
 
+import com.google.api.services.youtube.model.Video;
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
+import handiebot.command.ReactionHandler;
+import handiebot.command.reactionListeners.YoutubeChoiceListener;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
+import handiebot.utils.YoutubeSearch;
+import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.util.RequestBuffer;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.YoutubeSearch.WATCH_URL;
 
 /**
  * @author Andrew Lalis
@@ -17,7 +27,7 @@ public class PlayCommand extends ContextCommand {
 
     public PlayCommand() {
         super("play",
-                "[URL]",
+                "[URL|QUERY]",
                 resourceBundle.getString("commands.command.play.description"),
                 0);
     }
@@ -27,11 +37,34 @@ public class PlayCommand extends ContextCommand {
         if (context.getArgs() == null || context.getArgs().length == 0){
             HandieBot.musicPlayer.playQueue(context.getGuild());
         } else {
-            try {
-                HandieBot.musicPlayer.addToQueue(context.getGuild(), new UnloadedTrack(context.getArgs()[0]), context.getUser());
-            } catch (Exception e) {
-                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.play.songAddError"), context.getArgs()[0]));
-                e.printStackTrace();
+            //Check if an actual URL is used, and if not, create a youtube request.
+            if (context.getArgs()[0].startsWith("http")) {
+                try {
+                    HandieBot.musicPlayer.addToQueue(context.getGuild(), new UnloadedTrack(context.getArgs()[0]), context.getUser());
+                } catch (Exception e) {
+                    context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.play.songAddError"), context.getArgs()[0]));
+                    e.printStackTrace();
+                }
+            } else {
+                //Construct a Youtube song.
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < context.getArgs().length; i++){
+                    sb.append(context.getArgs()[i]).append(' ');
+                }
+                List<Video> videos = YoutubeSearch.query(sb.toString().trim());
+                if (videos != null) {
+                    EmbedObject e = YoutubeSearch.createEmbed(videos);
+                    IMessage message = context.getChannel().sendMessage(e);
+                    List<String> urls = new ArrayList<>(videos.size());
+                    videos.forEach((video) -> urls.add(WATCH_URL+video.getId()));
+                    RequestBuffer.request(() -> message.addReaction(":one:")).get();
+                    RequestBuffer.request(() -> message.addReaction(":two:")).get();
+                    RequestBuffer.request(() -> message.addReaction(":three:")).get();
+                    RequestBuffer.request(() -> message.addReaction(":four:")).get();
+                    RequestBuffer.request(() -> message.addReaction(":five:")).get();
+                    RequestBuffer.request(() -> message.addReaction(":x:")).get();
+                    ReactionHandler.addListener(new YoutubeChoiceListener(message, context.getUser(), urls));
+                }
             }
         }
     }

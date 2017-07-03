@@ -1,7 +1,7 @@
 package handiebot.command;
 
-import handiebot.utils.DisappearingMessage;
 import handiebot.utils.FileUtil;
+import handiebot.utils.MessageUtils;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
@@ -50,7 +50,7 @@ public class CommandHandler {
         //Create a context to give to each command's execution, so it knows what channel to reply on, etc.
         CommandContext context = new CommandContext(user, channel, guild, args);
         if (guild != null && command != null){
-            DisappearingMessage.deleteMessageAfter(1000, message);
+            MessageUtils.deleteMessageAfter(1000, message);
             Commands.executeCommand(command, context);
         }
     }

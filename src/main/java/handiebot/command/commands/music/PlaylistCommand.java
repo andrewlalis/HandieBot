@@ -6,9 +6,10 @@ import handiebot.command.CommandHandler;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
-import handiebot.utils.DisappearingMessage;
+import handiebot.utils.MessageUtils;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.RequestBuffer;
 
 import java.io.File;
@@ -82,7 +83,8 @@ public class PlaylistCommand extends ContextCommand {
      * @param channel The channel to show the error message in.
      */
     private void incorrectMainArg(IChannel channel){
-        new DisappearingMessage(channel, MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.incorrectMainArg"), this.getUsage(channel.getGuild())), 5000);
+        IMessage message = channel.sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.incorrectMainArg"), this.getUsage(channel.getGuild())));
+        MessageUtils.deleteMessageAfter(5000, message);
     }
 
     /**
@@ -289,7 +291,8 @@ public class PlaylistCommand extends ContextCommand {
         if (Playlist.playlistExists(context.getArgs()[1])){
             return true;
         } else {
-            new DisappearingMessage(context.getChannel(), MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.playlistDoesNotExist"), getPlaylistShowString(context)), 3000);
+            IMessage message = context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.playlistDoesNotExist"), getPlaylistShowString(context)));
+            MessageUtils.deleteMessageAfter(3000, message);
             return false;
         }
     }
