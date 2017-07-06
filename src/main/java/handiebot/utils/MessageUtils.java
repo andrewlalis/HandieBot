@@ -2,6 +2,8 @@ package handiebot.utils;
 
 import handiebot.HandieBot;
 import handiebot.view.BotLog;
+import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.RequestBuffer;
@@ -16,6 +18,26 @@ import static handiebot.HandieBot.resourceBundle;
 public class MessageUtils extends Thread implements Runnable {
 
     private MessageUtils(){}
+//TODO: Replace all 'sendMessage' calls with the new rate-limited calls.
+    /**
+     * Sends a message to a channel safely, using a request buffer.
+     * @param content The string content of the message.
+     * @param channel The channel to send the message on.
+     * @return The message object that was sent.
+     */
+    public static IMessage sendMessage(String content, IChannel channel){
+        return RequestBuffer.request(() -> (IMessage)channel.sendMessage(content)).get();
+    }
+
+    /**
+     * Sends an embed object to a channel safely, using a request buffer.
+     * @param embed The content of the message.
+     * @param channel The channel to send the message on.
+     * @return The message object that was sent.
+     */
+    public static IMessage sendMessage(EmbedObject embed, IChannel channel){
+        return RequestBuffer.request(() -> (IMessage)channel.sendMessage(embed)).get();
+    }
 
     /**
      * Deletes a message after a set amount of time.

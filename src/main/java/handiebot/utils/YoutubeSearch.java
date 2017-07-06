@@ -19,7 +19,10 @@ import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.common.base.Joiner;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.EmbedBuilder;
+import sx.blah.discord.util.RequestBuffer;
 
 import java.awt.*;
 import java.io.File;
@@ -186,6 +189,25 @@ public class YoutubeSearch {
             builder.withFooterText("Please add a reaction to select a song, or cancel. Choice times out in 30 seconds.");
         }
         return builder.build();
+    }
+
+    /**
+     * Displays the first five results from a youtube search, and adds reactions so that a user may choose an option.
+     * @param videos The list of videos, returned from calling {@code query}.
+     * @param channel The channel to display the dialog in.
+     */
+    public static IMessage displayChoicesDialog(List<Video> videos, IChannel channel){
+        EmbedObject e = YoutubeSearch.createEmbed(videos);
+        IMessage message = channel.sendMessage(e);
+        List<String> urls = new ArrayList<>(videos.size());
+        videos.forEach((video) -> urls.add(WATCH_URL + video.getId()));
+        RequestBuffer.request(() -> message.addReaction(":one:")).get();
+        RequestBuffer.request(() -> message.addReaction(":two:")).get();
+        RequestBuffer.request(() -> message.addReaction(":three:")).get();
+        RequestBuffer.request(() -> message.addReaction(":four:")).get();
+        RequestBuffer.request(() -> message.addReaction(":five:")).get();
+        RequestBuffer.request(() -> message.addReaction(":x:")).get();
+        return message;
     }
 
 }

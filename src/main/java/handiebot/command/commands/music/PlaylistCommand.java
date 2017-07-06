@@ -1,12 +1,16 @@
 package handiebot.command.commands.music;
 
+import com.google.api.services.youtube.model.Video;
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.CommandHandler;
+import handiebot.command.ReactionHandler;
+import handiebot.command.reactionListeners.YoutubePlaylistAddListener;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.MessageUtils;
+import handiebot.utils.YoutubeSearch;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
@@ -14,10 +18,12 @@ import sx.blah.discord.util.RequestBuffer;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.YoutubeSearch.WATCH_URL;
 
 /**
  * @author Andrew Lalis
@@ -32,7 +38,7 @@ public class PlaylistCommand extends ContextCommand {
                         "\t`create <PLAYLIST>` - "+resourceBundle.getString("commands.command.playlist.description.create")+"\n" +
                         "\t`delete <PLAYLIST>` - "+resourceBundle.getString("commands.command.playlist.description.delete")+"\n" +
                         "\t`show [PLAYLIST]` - "+resourceBundle.getString("commands.command.playlist.description.show")+"\n" +
-                        "\t`add <PLAYLIST> <URL> [URL]...` - "+resourceBundle.getString("commands.command.playlist.description.add")+"\n" +
+                        "\t`add <PLAYLIST> <URL URL...|SEARCHTEXT, SEARCHTEXT...>` - "+resourceBundle.getString("commands.command.playlist.description.add")+"\n" +
                         "\t`remove <PLAYLIST> <SONGINDEX>` - "+resourceBundle.getString("commands.command.playlist.description.remove")+"\n" +
                         "\t`rename <PLAYLIST> <NEWNAME>` - "+resourceBundle.getString("commands.command.playlist.description.rename")+"\n" +
                         "\t`move <PLAYLIST> <OLDINDEX> <NEWINDEX>` - "+resourceBundle.getString("commands.command.playlist.description.move")+"\n" +
@@ -160,13 +166,29 @@ public class PlaylistCommand extends ContextCommand {
                 return;
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
-            for (int i = 2; i < context.getArgs().length; i++){
-                playlist.loadTrack(context.getArgs()[i]);
-                RequestBuffer.request(() -> context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.message"), playlist.getName()))).get();
+            if (context.getArgs()[2].startsWith("http")){
+                //These are songs, so add them immediately.
+                for (int i = 2; i < context.getArgs().length; i++){
+                    playlist.loadTrack(context.getArgs()[i]);
+                    RequestBuffer.request(() -> context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.message"), playlist.getName()))).get();
+                }
+                playlist.save();
+                context.getChannel().sendMessage(playlist.toString());
+                log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.log"), playlist.getName()));
+            } else {
+                //This is a youtube search query.
+                StringBuilder sb = new StringBuilder();
+                for (int i = 2; i < context.getArgs().length; i++){
+                    sb.append(context.getArgs()[i]).append(' ');
+                }
+                List<Video> videos = YoutubeSearch.query(sb.toString().trim());
+                if (videos != null) {
+                    List<String> urls = new ArrayList<>(videos.size());
+                    videos.forEach((video) -> urls.add(WATCH_URL+video.getId()));
+                    IMessage message = YoutubeSearch.displayChoicesDialog(videos, context.getChannel());
+                    ReactionHandler.addListener(new YoutubePlaylistAddListener(message, context.getUser(), urls, playlist));
+                }
             }
-            playlist.save();
-            context.getChannel().sendMessage(playlist.toString());
-            log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.log"), playlist.getName()));
         } else {
             if (context.getArgs().length == 1){
                 context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.addNameNeeded"), getPlaylistShowString(context)));

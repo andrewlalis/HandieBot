@@ -4,13 +4,11 @@ import com.google.api.services.youtube.model.Video;
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.ReactionHandler;
-import handiebot.command.reactionListeners.YoutubeChoiceListener;
+import handiebot.command.reactionListeners.YoutubePlayListener;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.YoutubeSearch;
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.util.RequestBuffer;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -46,24 +44,17 @@ public class PlayCommand extends ContextCommand {
                     e.printStackTrace();
                 }
             } else {
-                //Construct a Youtube song.
+                //Construct a Youtube song choice.
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < context.getArgs().length; i++){
                     sb.append(context.getArgs()[i]).append(' ');
                 }
                 List<Video> videos = YoutubeSearch.query(sb.toString().trim());
                 if (videos != null) {
-                    EmbedObject e = YoutubeSearch.createEmbed(videos);
-                    IMessage message = context.getChannel().sendMessage(e);
                     List<String> urls = new ArrayList<>(videos.size());
                     videos.forEach((video) -> urls.add(WATCH_URL+video.getId()));
-                    RequestBuffer.request(() -> message.addReaction(":one:")).get();
-                    RequestBuffer.request(() -> message.addReaction(":two:")).get();
-                    RequestBuffer.request(() -> message.addReaction(":three:")).get();
-                    RequestBuffer.request(() -> message.addReaction(":four:")).get();
-                    RequestBuffer.request(() -> message.addReaction(":five:")).get();
-                    RequestBuffer.request(() -> message.addReaction(":x:")).get();
-                    ReactionHandler.addListener(new YoutubeChoiceListener(message, context.getUser(), urls));
+                    IMessage message = YoutubeSearch.displayChoicesDialog(videos, context.getChannel());
+                    ReactionHandler.addListener(new YoutubePlayListener(message, context.getUser(), urls));
                 }
             }
         }

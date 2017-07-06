@@ -1,9 +1,7 @@
 package handiebot.command.reactionListeners;
 
-import handiebot.HandieBot;
 import handiebot.command.ReactionHandler;
 import handiebot.command.types.ReactionListener;
-import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.ReactionEvent;
 import sx.blah.discord.handle.obj.IMessage;
@@ -20,14 +18,14 @@ import static java.lang.Thread.sleep;
  * Interface for youtube search results choices. A new instance of this listener is created every time a youtube
  * query is shown, and is unique for each user.
  */
-public class YoutubeChoiceListener implements ReactionListener {
+public abstract class YoutubeChoiceListener implements ReactionListener {
 
-    private final IMessage message;
-    private final IUser user;
-    private final List<String> urls;
-    private static final long timeout = 30000;//Time until the choice times out and deletes itself.
+    protected final IMessage message;
+    protected final IUser user;
+    protected final List<String> urls;
+    protected static final long timeout = 30000;//Time until the choice times out and deletes itself.
 
-    private String[] choices = {
+    private static final String[] choices = {
             "1⃣",
             "2⃣",
             "3⃣",
@@ -39,7 +37,6 @@ public class YoutubeChoiceListener implements ReactionListener {
         this.message = message;
         this.user = user;
         this.urls = urls;
-        YoutubeChoiceListener instance = this;
         new Thread(() -> {
             try {
                 sleep(timeout);
@@ -59,12 +56,7 @@ public class YoutubeChoiceListener implements ReactionListener {
                 (this.user.getLongID() == event.getUser().getLongID())){
             for (int i = 0; i < choices.length; i++){
                 if (event.getReaction().toString().equals(choices[i])){
-                    try {
-                        HandieBot.musicPlayer.addToQueue(message.getGuild(), new UnloadedTrack(urls.get(i)), this.user);
-                        log.log(BotLog.TYPE.MUSIC, message.getGuild(), this.user.getName()+" chose item "+(i+1)+" from the Youtube query.");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    onChoice(i);
                     break;
                 }
             }
@@ -72,8 +64,17 @@ public class YoutubeChoiceListener implements ReactionListener {
         }
     }
 
+    /**
+     * Method to delete the large, unwieldy message and remove the listener for this set of videos.
+     */
     private void cleanup(){
         RequestBuffer.request(message::delete);
         ReactionHandler.removeListener(this);
     }
+
+    /**
+     * What to do when a choice is made.
+     * @param choice An integer value from 0 to 4, describing which choice the player has chosen.
+     */
+    protected abstract void onChoice(int choice);
 }

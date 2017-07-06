@@ -218,10 +218,7 @@ public class MusicPlayer {
             StringBuilder sb = new StringBuilder();
             if (timeUntilPlay > 0) {
                 sb.append(MessageFormat.format(resourceBundle.getString("player.addedToQueue"), user.getName(), track.getTitle()));
-            }
-            //If there's some tracks in the queue, get the time until this one plays.
-            if (timeUntilPlay > 0){
-                sb.append(String.format("\nTime until play: %d min, %d sec",
+                sb.append(String.format("\nTime until play: %d min, %02d sec",
                         TimeUnit.MILLISECONDS.toMinutes(timeUntilPlay),
                         TimeUnit.MILLISECONDS.toSeconds(timeUntilPlay) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeUntilPlay))
                 ));

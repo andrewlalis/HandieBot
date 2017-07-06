@@ -52,7 +52,8 @@ public class Commands {
     public static void executeCommand(String command, CommandContext context){
         for (Command cmd : commands) {
             if (cmd.getName().equals(command)){
-                if (cmd instanceof StaticCommand){
+                if (cmd instanceof StaticCommand &&
+                        ((context != null && cmd.canUserExecute(context.getUser(), context.getGuild())) || context == null)){
                     log.log(BotLog.TYPE.COMMAND, command+" has been issued.");
                     ((StaticCommand)cmd).execute();
                     return;
