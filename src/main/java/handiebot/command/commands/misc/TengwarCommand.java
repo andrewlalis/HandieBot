@@ -2,12 +2,14 @@ package handiebot.command.commands.misc;
 
 import handiebot.command.CommandContext;
 import handiebot.command.types.ContextCommand;
+import handiebot.utils.MessageUtils;
 import net.agspace.TengwarImageGenerator;
 import net.agspace.Translator;
 
 import java.io.FileNotFoundException;
 
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -24,12 +26,13 @@ public class TengwarCommand extends ContextCommand {
     @Override
     public void execute(CommandContext context) {
         if (context.getArgs().length == 0){
-            context.getChannel().sendMessage(this.getUsage(context.getGuild()));
+            sendMessage(this.getUsage(context.getGuild()), context.getChannel());
         } else if (context.getArgs().length >= 2){
-            String input = readTextFromArgs(context.getArgs());
+            String input = MessageUtils.getTextFromArgs(context.getArgs(), 1);
             if (context.getArgs()[0].equalsIgnoreCase("to")){
                 String result = Translator.translateToTengwar(input);
                 try {
+                    //TODO: replace with rate-limited send method.
                     context.getChannel().sendFile("Raw text: `" +result+'`', TengwarImageGenerator.generateImage(result,
                             600,
                             24f,
@@ -40,18 +43,11 @@ public class TengwarCommand extends ContextCommand {
                     e.printStackTrace();
                 }
             } else if (context.getArgs()[0].equalsIgnoreCase("from")){
-                context.getChannel().sendMessage(Translator.translateToEnglish(input));
+                sendMessage(Translator.translateToEnglish(input), context.getChannel());
             }
         } else {
-            context.getChannel().sendMessage(this.getUsage(context.getGuild()));
+            sendMessage(this.getUsage(context.getGuild()), context.getChannel());
         }
     }
 
-    private String readTextFromArgs(String[] args){
-        StringBuilder sb = new StringBuilder();
-        for (int i = 1; i < args.length; i++){
-            sb.append(args[i]).append(' ');
-        }
-        return sb.toString().trim();
-    }
 }

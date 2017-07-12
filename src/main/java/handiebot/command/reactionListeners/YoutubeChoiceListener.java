@@ -20,11 +20,12 @@ import static java.lang.Thread.sleep;
  */
 public abstract class YoutubeChoiceListener implements ReactionListener {
 
-    protected final IMessage message;
-    protected final IUser user;
-    protected final List<String> urls;
+    protected final IMessage message;//The message generated that this listener should attach to.
+    protected final IUser user;//The user who needs to make a decision.
+    protected final List<String> urls;//The list of URLs to display information about.
     protected static final long timeout = 30000;//Time until the choice times out and deletes itself.
 
+    //These are just the raw characters for the numbers 1 - 5.
     private static final String[] choices = {
             "1⃣",
             "2⃣",

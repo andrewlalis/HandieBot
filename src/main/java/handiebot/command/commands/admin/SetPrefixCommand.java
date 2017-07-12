@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -29,10 +30,10 @@ public class SetPrefixCommand extends ContextCommand {
             CommandHandler.PREFIXES.put(context.getGuild(), context.getArgs()[0]);
             CommandHandler.saveGuildPrefixes();
             String response = MessageFormat.format(resourceBundle.getString("commands.command.setPrefix.changed"), context.getArgs()[0]);
-            context.getChannel().sendMessage(response);
+            sendMessage(response, context.getChannel());
             log.log(BotLog.TYPE.INFO, response);
         } else {
-            context.getChannel().sendMessage(resourceBundle.getString("commands.command.setPrefix.noPrefixError"));
+            sendMessage(resourceBundle.getString("commands.command.setPrefix.noPrefixError"), context.getChannel());
         }
     }
 }

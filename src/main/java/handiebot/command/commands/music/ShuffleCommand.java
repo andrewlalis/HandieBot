@@ -8,6 +8,7 @@ import handiebot.command.types.ContextCommand;
 import java.text.MessageFormat;
 
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -28,7 +29,7 @@ public class ShuffleCommand extends ContextCommand {
             boolean shouldShuffle = (context.getArgs()[0].toLowerCase().equals("true"));
             HandieBot.musicPlayer.setShuffle(context.getGuild(), shouldShuffle);
         } else {
-            context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("player.getShuffle"), HandieBot.musicPlayer.isShuffling(context.getGuild())));
+            sendMessage(MessageFormat.format(resourceBundle.getString("player.getShuffle"), HandieBot.musicPlayer.isShuffling(context.getGuild())), context.getChannel());
         }
     }
 }

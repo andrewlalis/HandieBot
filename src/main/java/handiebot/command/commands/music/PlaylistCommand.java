@@ -14,7 +14,6 @@ import handiebot.utils.YoutubeSearch;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.util.RequestBuffer;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -23,6 +22,7 @@ import java.util.List;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 import static handiebot.utils.YoutubeSearch.WATCH_URL;
 
 /**
@@ -89,7 +89,7 @@ public class PlaylistCommand extends ContextCommand {
      * @param channel The channel to show the error message in.
      */
     private void incorrectMainArg(IChannel channel){
-        IMessage message = channel.sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.incorrectMainArg"), this.getUsage(channel.getGuild())));
+        IMessage message = sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.incorrectMainArg"), this.getUsage(channel.getGuild())), channel);
         MessageUtils.deleteMessageAfter(5000, message);
     }
 
@@ -107,9 +107,9 @@ public class PlaylistCommand extends ContextCommand {
             }
             playlist.save();
             log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.createdPlaylist.log"), playlist.getName(), playlist.getTrackCount()));
-            context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.createdPlaylist.message"), playlist.getName(), this.getPrefixedName(context.getGuild()), playlist.getName()));
+            sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.createdPlaylist.message"), playlist.getName(), this.getPrefixedName(context.getGuild()), playlist.getName()), context.getChannel());
         } else {
-            context.getChannel().sendMessage(resourceBundle.getString("commands.command.playlist.error.createPlaylistName"));
+            sendMessage(resourceBundle.getString("commands.command.playlist.error.createPlaylistName"), context.getChannel());
         }
     }
 
@@ -125,13 +125,13 @@ public class PlaylistCommand extends ContextCommand {
             boolean success = f.delete();
             if (success){
                 log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.delete.log"), context.getArgs()[1]));
-                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.delete.message"), context.getArgs()[1]));
+                sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.delete.message"), context.getArgs()[1]), context.getChannel());
             } else {
                 log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.delete.log"), context.getArgs()[1]));
-                context.getChannel().sendMessage(resourceBundle.getString("commands.command.playlist.error.delete.message"));
+                sendMessage(resourceBundle.getString("commands.command.playlist.error.delete.message"), context.getChannel());
             }
         } else {
-            context.getChannel().sendMessage(resourceBundle.getString("commands.command.playlist.error.deletePlaylistName"));
+            sendMessage(resourceBundle.getString("commands.command.playlist.error.deletePlaylistName"), context.getChannel());
         }
     }
 
@@ -145,14 +145,14 @@ public class PlaylistCommand extends ContextCommand {
                 return;
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
-            context.getChannel().sendMessage(playlist.toString());
+            sendMessage(playlist.toString(), context.getChannel());
         } else {
             List<String> playlists = Playlist.getAvailablePlaylists();
             StringBuilder sb = new StringBuilder("**Playlists:**\n");
             for (String playlist : playlists) {
                 sb.append(playlist).append('\n');
             }
-            context.getChannel().sendMessage(sb.toString());
+            sendMessage(sb.toString(), context.getChannel());
         }
     }
 
@@ -170,18 +170,14 @@ public class PlaylistCommand extends ContextCommand {
                 //These are songs, so add them immediately.
                 for (int i = 2; i < context.getArgs().length; i++){
                     playlist.loadTrack(context.getArgs()[i]);
-                    RequestBuffer.request(() -> context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.message"), playlist.getName()))).get();
+                    sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.message"), playlist.getName()), context.getChannel());
                 }
                 playlist.save();
-                context.getChannel().sendMessage(playlist.toString());
+                sendMessage(playlist.toString(), context.getChannel());
                 log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.log"), playlist.getName()));
             } else {
                 //This is a youtube search query.
-                StringBuilder sb = new StringBuilder();
-                for (int i = 2; i < context.getArgs().length; i++){
-                    sb.append(context.getArgs()[i]).append(' ');
-                }
-                List<Video> videos = YoutubeSearch.query(sb.toString().trim());
+                List<Video> videos = YoutubeSearch.query(MessageUtils.getTextFromArgs(context.getArgs(), 2));
                 if (videos != null) {
                     List<String> urls = new ArrayList<>(videos.size());
                     videos.forEach((video) -> urls.add(WATCH_URL+video.getId()));
@@ -191,9 +187,9 @@ public class PlaylistCommand extends ContextCommand {
             }
         } else {
             if (context.getArgs().length == 1){
-                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.addNameNeeded"), getPlaylistShowString(context)));
+                sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.addNameNeeded"), getPlaylistShowString(context)), context.getChannel());
             } else {
-                context.getChannel().sendMessage(resourceBundle.getString("commands.command.playlist.error.addUrlNeeded"));
+                sendMessage(resourceBundle.getString("commands.command.playlist.error.addUrlNeeded"), context.getChannel());
             }
         }
     }
@@ -209,11 +205,11 @@ public class PlaylistCommand extends ContextCommand {
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
             log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.play.log"), playlist.getName()));
-            context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.play.message"), playlist.getName()));
+            sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.play.message"), playlist.getName()), context.getChannel());
             HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.setPlaylist(playlist);
             HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.nextTrack();
         } else {
-            context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.playPlaylistNeeded"), getPlaylistShowString(context)));
+            sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.playPlaylistNeeded"), getPlaylistShowString(context)), context.getChannel());
         }
     }
 
@@ -228,15 +224,15 @@ public class PlaylistCommand extends ContextCommand {
             File f = new File(System.getProperty("user.home")+"/.handiebot/playlist/"+context.getArgs()[1].replace(" ", "_")+".txt");
             boolean success = f.renameTo(new File(System.getProperty("user.home")+"/.handiebot/playlist/"+context.getArgs()[2].replace(" ", "_")+".txt"));
             if (success){
-                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.rename.message"), context.getArgs()[1], context.getArgs()[2]));
+                sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.rename.message"), context.getArgs()[1], context.getArgs()[2]), context.getChannel());
                 log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.rename.log"), context.getArgs()[1], context.getArgs()[2]));
             } else {
                 String response = MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.renameError"), context.getArgs()[1], context.getArgs()[2]);
-                context.getChannel().sendMessage(response);
+                sendMessage(response, context.getChannel());
                 log.log(BotLog.TYPE.ERROR, response);
             }
         } else {
-            context.getChannel().sendMessage(resourceBundle.getString("commands.command.playlist.error.renameBadArgs"));
+            sendMessage(resourceBundle.getString("commands.command.playlist.error.renameBadArgs"), context.getChannel());
         }
     }
 
@@ -255,17 +251,17 @@ public class PlaylistCommand extends ContextCommand {
                 UnloadedTrack track = playlist.getTracks().get(index);
                 playlist.removeTrack(track);
                 playlist.save();
-                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.remove.message"), track.getTitle(), playlist.getName()));
+                sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.remove.message"), track.getTitle(), playlist.getName()), context.getChannel());
                 log.log(BotLog.TYPE.MUSIC, MessageFormat.format(resourceBundle.getString("commands.command.playlist.remove.log"), track.getTitle(), playlist.getName()));
             } catch (IndexOutOfBoundsException | NumberFormatException e){
                 String response = MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.removeError"), playlist.getName());
-                context.getChannel().sendMessage(response);
+                sendMessage(response, context.getChannel());
                 log.log(BotLog.TYPE.ERROR, response);
                 e.printStackTrace();
             }
 
         } else {
-            context.getChannel().sendMessage(resourceBundle.getString("commands.command.playlist.error.removeBadArgs"));
+            sendMessage(resourceBundle.getString("commands.command.playlist.error.removeBadArgs"), context.getChannel());
         }
     }
 
@@ -285,7 +281,7 @@ public class PlaylistCommand extends ContextCommand {
                 oldIndex = Integer.parseInt(context.getArgs()[2])-1;
                 newIndex = Integer.parseInt(context.getArgs()[3])-1;
             } catch (NumberFormatException e){
-                context.getChannel().sendMessage(resourceBundle.getString("commands.command.playlist.error.moveIndexError"));
+                sendMessage(resourceBundle.getString("commands.command.playlist.error.moveIndexError"), context.getChannel());
             }
             UnloadedTrack track;
             if ((oldIndex > -1 && oldIndex < playlist.getTrackCount()) &&
@@ -293,13 +289,13 @@ public class PlaylistCommand extends ContextCommand {
                 track = playlist.getTracks().remove(oldIndex);
                 playlist.getTracks().add(newIndex, track);
                 playlist.save();
-                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.move.message"), track.getTitle(), oldIndex + 1, newIndex + 1));
+                sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.move.message"), track.getTitle(), oldIndex + 1, newIndex + 1), context.getChannel());
                 log.log(BotLog.TYPE.MUSIC, MessageFormat.format(resourceBundle.getString("commands.command.playlist.move.log"), track.getTitle(), oldIndex + 1, newIndex + 1));
             } else {
-                context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.moveInvalidIndex"), oldIndex, newIndex));
+                sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.moveInvalidIndex"), oldIndex, newIndex), context.getChannel());
             }
         } else {
-            context.getChannel().sendMessage(resourceBundle.getString("commands.command.playlist.error.moveBadArgs"));
+            sendMessage(resourceBundle.getString("commands.command.playlist.error.moveBadArgs"), context.getChannel());
         }
     }
 
@@ -313,7 +309,7 @@ public class PlaylistCommand extends ContextCommand {
         if (Playlist.playlistExists(context.getArgs()[1])){
             return true;
         } else {
-            IMessage message = context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.playlistDoesNotExist"), getPlaylistShowString(context)));
+            IMessage message = sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.playlistDoesNotExist"), getPlaylistShowString(context)), context.getChannel());
             MessageUtils.deleteMessageAfter(3000, message);
             return false;
         }

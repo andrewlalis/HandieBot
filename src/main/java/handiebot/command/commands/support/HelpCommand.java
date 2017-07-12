@@ -7,6 +7,7 @@ import handiebot.command.types.ContextCommand;
 import sx.blah.discord.handle.obj.IPrivateChannel;
 
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -24,7 +25,6 @@ public class HelpCommand extends ContextCommand {
     @Override
     public void execute(CommandContext context) {
         IPrivateChannel pm = context.getUser().getOrCreatePMChannel();
-
         StringBuilder sb = new StringBuilder("HandieBot Commands:\n");
         for (Command cmd : Commands.commands){
             StringBuilder commandText = new StringBuilder();
@@ -36,13 +36,12 @@ public class HelpCommand extends ContextCommand {
             }
             commandText.append("`\n").append(cmd.getDescription()).append("\n\n");
             if (sb.length() + commandText.length() > 2000){
-                pm.sendMessage(sb.toString());
+                sendMessage(sb.toString(), pm);
                 sb = commandText;
             } else {
                 sb.append(commandText);
             }
         }
-
-        pm.sendMessage(sb.toString());
+        sendMessage(sb.toString(), pm);
     }
 }

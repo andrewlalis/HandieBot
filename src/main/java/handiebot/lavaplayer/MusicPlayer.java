@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -125,7 +126,7 @@ public class MusicPlayer {
         getMusicManager(guild).scheduler.setRepeat(value);
         String message = MessageFormat.format(resourceBundle.getString("player.setRepeat"), getMusicManager(guild).scheduler.isRepeating());
         log.log(BotLog.TYPE.MUSIC, guild, message);
-        getChatChannel(guild).sendMessage(":repeat: "+message);
+        sendMessage(":repeat: "+message, getChatChannel(guild));
     }
 
     /**
@@ -154,7 +155,7 @@ public class MusicPlayer {
         getMusicManager(guild).scheduler.setShuffle(value);
         String message = MessageFormat.format(resourceBundle.getString("player.setShuffle"), getMusicManager(guild).scheduler.isShuffling());
         log.log(BotLog.TYPE.MUSIC, guild, message);
-        getChatChannel(guild).sendMessage(":twisted_rightwards_arrows: "+message);
+        sendMessage(":twisted_rightwards_arrows: "+message, getChatChannel(guild));
     }
 
     /**
@@ -173,14 +174,14 @@ public class MusicPlayer {
         List<UnloadedTrack> tracks = getMusicManager(guild).scheduler.queueList();
         if (tracks.size() == 0) {
             //noinspection ConstantConditions
-            getChatChannel(guild).sendMessage(MessageFormat.format(resourceBundle.getString("player.queueEmpty"), Commands.get("play").getUsage()));
+            sendMessage(MessageFormat.format(resourceBundle.getString("player.queueEmpty"), Commands.get("play").getUsage()), getChatChannel(guild));
         } else {
             if (tracks.size() > 10 && showAll) {
                 String result = Pastebin.paste("Current queue for discord server: "+guild.getName()+".", getMusicManager(guild).scheduler.getActivePlaylist().toString());
                 if (result != null && result.startsWith("https://pastebin.com/")){
                     log.log(BotLog.TYPE.INFO, guild, MessageFormat.format(resourceBundle.getString("player.queueUploaded"), result));
                     //Only display the pastebin link for 10 minutes.
-                    IMessage message = getChatChannel(guild).sendMessage(MessageFormat.format(resourceBundle.getString("player.pastebinLink"), result));
+                    IMessage message = sendMessage(MessageFormat.format(resourceBundle.getString("player.pastebinLink"), result), getChatChannel(guild));
                     MessageUtils.deleteMessageAfter(600000, message);
                 } else {
                     log.log(BotLog.TYPE.ERROR, guild, MessageFormat.format(resourceBundle.getString("player.pastebinError"), result));
@@ -224,7 +225,7 @@ public class MusicPlayer {
                 ));
             }
             if (sb.length() > 0) {
-                getChatChannel(guild).sendMessage(sb.toString());
+                sendMessage(sb.toString(), getChatChannel(guild));
             }
         }
 
@@ -232,10 +233,11 @@ public class MusicPlayer {
 
     /**
      * If possible, try to begin playing from the track scheduler's queue.
+     * @param guild The guild to play music on.
      */
     public void playQueue(IGuild guild){
         if (getMusicManager(guild).scheduler.getActivePlaylist().getTrackCount() == 0){
-            getChatChannel(guild).sendMessage(resourceBundle.getString("player.playQueueEmpty"));
+            sendMessage(resourceBundle.getString("player.playQueueEmpty"), getChatChannel(guild));
             return;
         }
         IVoiceChannel vc = this.getVoiceChannel(guild);
@@ -245,18 +247,23 @@ public class MusicPlayer {
         getMusicManager(guild).scheduler.nextTrack();
     }
 
+    /**
+     * Clears the queue for a specified guild.
+     * @param guild The guild to clear the queue for.
+     */
     public void clearQueue(IGuild guild){
         getMusicManager(guild).scheduler.clearQueue();
-        getChatChannel(guild).sendMessage(resourceBundle.getString("player.queueCleared"));
+        sendMessage(resourceBundle.getString("player.queueCleared"), getChatChannel(guild));
     }
 
     /**
      * Skips the current track.
+     * @param guild The guild to skip the track for.
      */
     public void skipTrack(IGuild guild){
         String message = resourceBundle.getString("player.skippingCurrent");
         log.log(BotLog.TYPE.MUSIC, guild, message);
-        getChatChannel(guild).sendMessage(":track_next: "+message);
+        sendMessage(":track_next: "+message, getChatChannel(guild));
         getMusicManager(guild).scheduler.nextTrack();
     }
 
@@ -267,7 +274,7 @@ public class MusicPlayer {
     public void stop(IGuild guild){
         getMusicManager(guild).scheduler.stop();
         String message = resourceBundle.getString("player.musicStopped");
-        getChatChannel(guild).sendMessage(":stop_button: "+message);
+        sendMessage(":stop_button: "+message, getChatChannel(guild));
         log.log(BotLog.TYPE.MUSIC, guild, message);
     }
 

@@ -15,7 +15,7 @@ import static handiebot.HandieBot.log;
  * Specific Listener for choices in the Play command, where songs chosen are added to the active queue.
  */
 public class YoutubePlayListener extends YoutubeChoiceListener {
-
+//TODO: Externalize strings
     public YoutubePlayListener(IMessage message, IUser user, List<String> urls) {
         super(message, user, urls);
     }

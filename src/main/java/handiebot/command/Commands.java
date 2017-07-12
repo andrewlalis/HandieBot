@@ -18,6 +18,7 @@ import java.util.List;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -59,7 +60,7 @@ public class Commands {
                     return;
                 } else if (!cmd.canUserExecute(context.getUser(), context.getGuild())){
                     log.log(BotLog.TYPE.COMMAND, context.getGuild(), MessageFormat.format(resourceBundle.getString("commands.noPermission.log"), context.getUser().getName(), cmd.getName()));
-                    context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.noPermission.message"), command));
+                    sendMessage(MessageFormat.format(resourceBundle.getString("commands.noPermission.message"), command), context.getChannel());
                     return;
                 } else if (cmd instanceof ContextCommand){
                     log.log(BotLog.TYPE.COMMAND, context.getGuild(), context.getUser().getName()+" has issued the command: "+command);
@@ -101,7 +102,7 @@ public class Commands {
                 (context.getUser().getLongID() == 235439851263098880L) ||
                 (permission == 0);
         if (!result){
-            context.getChannel().sendMessage(resourceBundle.getString("commands.noPermission.subcommand"));
+            sendMessage(resourceBundle.getString("commands.noPermission.subcommand"), context.getChannel());
         }
         return result;
     }

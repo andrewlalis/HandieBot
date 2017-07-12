@@ -3,7 +3,7 @@ package handiebot;
 import handiebot.command.CommandHandler;
 import handiebot.command.ReactionHandler;
 import handiebot.lavaplayer.MusicPlayer;
-import handiebot.utils.YoutubeSearch;
+import handiebot.utils.FileUtil;
 import handiebot.view.BotLog;
 import handiebot.view.BotWindow;
 import sx.blah.discord.api.ClientBuilder;
@@ -17,6 +17,9 @@ import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RateLimitException;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -28,7 +31,14 @@ import java.util.*;
 public class HandieBot {
 
     public static final String APPLICATION_NAME = "HandieBot";
-    private static final String TOKEN = "MjgzNjUyOTg5MjEyNjg4Mzg0.C45A_Q.506b0G6my1FEFa7_YY39lxLBHUY";
+    private static final String TOKEN;
+    static {
+        TOKEN = readToken();
+        if (TOKEN.isEmpty()){
+            System.out.println("You do not have the token required to start the bot. Shutting down.");
+            System.exit(-1);
+        }
+    }
     private static boolean USE_GUI = true;
 
     public static final ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings");
@@ -102,7 +112,6 @@ public class HandieBot {
         client = new ClientBuilder().withToken(TOKEN).build();
         client.getDispatcher().registerListener(new HandieBot());
         client.login();
-        YoutubeSearch.query("two steps from hell");
     }
 
     /**
@@ -113,6 +122,21 @@ public class HandieBot {
      */
     public static boolean hasPermission(Permissions permission, IChannel channel){
         return channel.getModifiedPermissions(client.getOurUser()).contains(permission);
+    }
+
+    /**
+     * Reads the private discord token necessary to start the bot. If this fails, the bot will shut down.
+     * @return The string token needed to log in.
+     */
+    private static String readToken(){
+        String path = FileUtil.getDataDirectory()+"token.txt";
+        String result = "";
+        try(BufferedReader reader = new BufferedReader(new FileReader(path))){
+            result = reader.readLine();
+        } catch (IOException e) {
+            System.err.println("IOException while trying to read token. "+e.getMessage());
+        }
+        return result;
     }
 
     /**

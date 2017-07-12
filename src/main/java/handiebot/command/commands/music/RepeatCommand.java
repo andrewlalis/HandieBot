@@ -8,6 +8,7 @@ import handiebot.command.types.ContextCommand;
 import java.text.MessageFormat;
 
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -28,7 +29,7 @@ public class RepeatCommand extends ContextCommand {
             boolean shouldRepeat = (context.getArgs()[0].toLowerCase().equals("true"));
             HandieBot.musicPlayer.setRepeat(context.getGuild(), shouldRepeat);
         } else {
-            context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("player.getRepeat"), HandieBot.musicPlayer.isRepeating(context.getGuild())));
+            sendMessage(MessageFormat.format(resourceBundle.getString("player.getRepeat"), HandieBot.musicPlayer.isRepeating(context.getGuild())), context.getChannel());
         }
     }
 }

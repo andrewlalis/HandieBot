@@ -22,7 +22,6 @@ import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.EmbedBuilder;
-import sx.blah.discord.util.RequestBuffer;
 
 import java.awt.*;
 import java.io.File;
@@ -37,6 +36,8 @@ import java.util.List;
 import java.util.Locale;
 
 import static handiebot.HandieBot.APPLICATION_NAME;
+import static handiebot.utils.MessageUtils.addReaction;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -84,8 +85,7 @@ public class YoutubeSearch {
                         .setDataStoreFactory(DATA_STORE_FACTORY)
                         .setAccessType("offline")
                         .build();
-        Credential credential = new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
-        return credential;
+        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
 
     /**
@@ -198,15 +198,15 @@ public class YoutubeSearch {
      */
     public static IMessage displayChoicesDialog(List<Video> videos, IChannel channel){
         EmbedObject e = YoutubeSearch.createEmbed(videos);
-        IMessage message = channel.sendMessage(e);
+        IMessage message = sendMessage(e, channel);
         List<String> urls = new ArrayList<>(videos.size());
         videos.forEach((video) -> urls.add(WATCH_URL + video.getId()));
-        RequestBuffer.request(() -> message.addReaction(":one:")).get();
-        RequestBuffer.request(() -> message.addReaction(":two:")).get();
-        RequestBuffer.request(() -> message.addReaction(":three:")).get();
-        RequestBuffer.request(() -> message.addReaction(":four:")).get();
-        RequestBuffer.request(() -> message.addReaction(":five:")).get();
-        RequestBuffer.request(() -> message.addReaction(":x:")).get();
+        addReaction(message, ":one:");
+        addReaction(message, ":two:");
+        addReaction(message, ":three:");
+        addReaction(message, ":four:");
+        addReaction(message, ":five:");
+        addReaction(message, ":x:");
         return message;
     }
 

@@ -15,13 +15,14 @@ import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IVoiceChannel;
-import sx.blah.discord.util.RequestBuffer;
 
 import java.text.MessageFormat;
 import java.util.List;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.addReaction;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -192,9 +193,9 @@ public class TrackScheduler extends AudioEventAdapter {
         log.log(BotLog.TYPE.MUSIC, this.guild, MessageFormat.format(resourceBundle.getString("trackSchedule.trackStarted"), track.getInfo().title));
         List<IChannel> channels = this.guild.getChannelsByName(MusicPlayer.CHANNEL_NAME.toLowerCase());
         if (channels.size() > 0){
-            IMessage message = channels.get(0).sendMessage(MessageFormat.format(":arrow_forward: "+resourceBundle.getString("trackSchedule.nowPlaying"), track.getInfo().title, new UnloadedTrack(track).getFormattedDuration()));
-            RequestBuffer.request(() -> message.addReaction(":thumbsup:")).get();
-            RequestBuffer.request(() -> message.addReaction(":thumbsdown:")).get();
+            IMessage message = sendMessage(MessageFormat.format(":arrow_forward: "+resourceBundle.getString("trackSchedule.nowPlaying"), track.getInfo().title, new UnloadedTrack(track).getFormattedDuration()), channels.get(0));
+            addReaction(message, ":thumbsup:");
+            addReaction(message, ":thumbsdown:");
             ReactionHandler.addListener(new DownvoteListener(message));
         }
     }

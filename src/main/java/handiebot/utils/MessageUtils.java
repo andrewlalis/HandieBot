@@ -8,17 +8,21 @@ import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
+import static java.lang.Thread.sleep;
 
 /**
  * @author Andrew Lalis
  * Creates a message on a channel that will disappear after some time.
  */
-public class MessageUtils extends Thread implements Runnable {
+public class MessageUtils {
 
     private MessageUtils(){}
-//TODO: Replace all 'sendMessage' calls with the new rate-limited calls.
+
     /**
      * Sends a message to a channel safely, using a request buffer.
      * @param content The string content of the message.
@@ -37,6 +41,33 @@ public class MessageUtils extends Thread implements Runnable {
      */
     public static IMessage sendMessage(EmbedObject embed, IChannel channel){
         return RequestBuffer.request(() -> (IMessage)channel.sendMessage(embed)).get();
+    }
+
+    /**
+     * Sends a file object to a channel safely, using a request buffer.
+     * @param file The file to send.
+     * @param channel The channel to send the message on.
+     * @return The message that was sent, or null if the file could not be found.
+     */
+    public static IMessage sendFile(File file, IChannel channel){
+        return RequestBuffer.request(() -> {
+            IMessage msg = null;
+            try {
+                msg = channel.sendFile(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            return msg;
+        }).get();
+    }
+
+    /**
+     * Adds a reaction to a message safely, using the request buffer.
+     * @param message The message to add a reaction to.
+     * @param reaction The reaction to add, in string format.
+     */
+    public static void addReaction(IMessage message, String reaction){
+        RequestBuffer.request(() -> message.addReaction(reaction)).get();
     }
 
     /**
@@ -88,6 +119,11 @@ public class MessageUtils extends Thread implements Runnable {
         return sb.toString();
     }
 
+    /**
+     * Gets the 'emoji' for a specific digit. If the digit given is not one digit, zero is used.
+     * @param digit The digit to convert.
+     * @return A String representation of the emoji.
+     */
     private static String getDigitEmoji(int digit){
         switch (digit){
             case 1:
@@ -111,6 +147,24 @@ public class MessageUtils extends Thread implements Runnable {
             default:
                 return ":zero:";
         }
+    }
+
+    /**
+     * Generates a space-separated list of words from a given index until the end of an arguments list.
+     * @param args The args list, as it is given from a command context.
+     * @param firstWordIndex The index of the first word to read as text.
+     * @return A string of all the words combined, with spaces between each one, just as they would appear in the
+     * user's actual input string.
+     */
+    public static String getTextFromArgs(String[] args, int firstWordIndex){
+        StringBuilder sb = new StringBuilder();
+        for (int i = firstWordIndex; i < args.length; i++){
+            sb.append(args[i]);
+            if (i < args.length-1){
+                sb.append(' ');
+            }
+        }
+        return sb.toString();
     }
 
 }

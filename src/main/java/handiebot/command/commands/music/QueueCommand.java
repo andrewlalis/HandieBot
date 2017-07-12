@@ -11,6 +11,7 @@ import java.text.MessageFormat;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
  * @author Andrew Lalis
@@ -42,11 +43,12 @@ public class QueueCommand extends ContextCommand {
                     }
                     break;
                 case ("save"):
+                    //TODO: add some error messages so users know how to use this.
                     if (context.getArgs().length == 2 && Commands.hasPermission(context, 8)) {
                         Playlist p = HandieBot.musicPlayer.getAllSongsInQueue(context.getGuild());
                         p.setName(context.getArgs()[1]);
                         p.save();
-                        context.getChannel().sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.queue.save.message"), p.getTrackCount(), p.getName()));
+                        sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.queue.save.message"), p.getTrackCount(), p.getName()), context.getChannel());
                         log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.queue.save.log"), p.getName()));
                     }
                     break;
