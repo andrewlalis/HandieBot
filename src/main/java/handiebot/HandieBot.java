@@ -134,7 +134,7 @@ public class HandieBot {
         try(BufferedReader reader = new BufferedReader(new FileReader(path))){
             result = reader.readLine();
         } catch (IOException e) {
-            System.err.println("IOException while trying to read token. "+e.getMessage());
+            System.err.println("Unable to find the token file. You are unable to start the bot without this.");
         }
         return result;
     }
