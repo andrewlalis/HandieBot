@@ -1,13 +1,17 @@
 package handiebot.view;
 
 import handiebot.HandieBot;
+import handiebot.lavaplayer.playlist.Playlist;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.*;
 
 import static handiebot.HandieBot.resourceBundle;
 
@@ -30,6 +34,26 @@ public class BotWindow extends JFrame {
         scrollPane.setViewportView(outputArea);
         scrollPane.setAutoscrolls(true);
         getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+        //Playlist shower
+        java.util.List<String> playlists = Playlist.getAvailablePlaylists();
+        String labels[] = new String[playlists.size()];
+        int i=0;
+        for (String playlist : playlists) {
+            labels[i] = playlist;
+            i++;
+        }
+        JList<String> list = new JList<>(labels);
+        /*list.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+
+            }
+        });*/
+        JScrollPane jScrollPane = new JScrollPane(list);
+        jScrollPane.setPreferredSize(new Dimension(100, 200));
+        getContentPane().add(jScrollPane, BorderLayout.EAST);
+
         //Command field.
         JTextField commandField = new JTextField();
         commandField.setFont(new Font("Courier New", Font.PLAIN, 16));
@@ -60,6 +84,8 @@ public class BotWindow extends JFrame {
         pack();
         setVisible(true);
     }
+
+    //private void selected
 
     public JTextPane getOutputArea(){
         return this.outputArea;

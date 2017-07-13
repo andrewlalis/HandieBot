@@ -39,9 +39,11 @@ public class CommandLineListener implements KeyListener {
      * @param command The first word typed, or the command itself.
      * @param args The list of arguments for the command.
      */
-    private void executeCommand(String command, String[] args){
-        if (command.equals("quit")){
-            Commands.executeCommand("quit", null);
+    private void executeCommand(String command, String[] args) {
+        switch (command) {
+            case "quit":
+                Commands.executeCommand("quit", null);
+                break;
         }
     }
 }

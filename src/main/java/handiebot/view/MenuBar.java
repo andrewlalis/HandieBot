@@ -18,6 +18,7 @@ public class MenuBar extends JMenuBar {
         JMenu fileMenu = new JMenu(resourceBundle.getString("menu.filemenu.title"));
             fileMenu.add(new ActionItem(resourceBundle.getString("menu.filemenu.quit"), new CommandAction(Commands.get("quit"))));
             this.add(fileMenu);
+
     }
 
 }

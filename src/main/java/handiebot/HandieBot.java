@@ -93,7 +93,7 @@ public class HandieBot {
 
     public static void main(String[] args) throws DiscordException, RateLimitException {
 
-        musicPlayer = new MusicPlayer();
+        //musicPlayer = new MusicPlayer();
 
         List<String> argsList = Arrays.asList(args);
 
@@ -108,10 +108,10 @@ public class HandieBot {
             log = new BotLog(window.getOutputArea());
         }
 
-        log.log(BotLog.TYPE.INFO, resourceBundle.getString("log.loggingIn"));
-        client = new ClientBuilder().withToken(TOKEN).build();
-        client.getDispatcher().registerListener(new HandieBot());
-        client.login();
+        //log.log(BotLog.TYPE.INFO, resourceBundle.getString("log.loggingIn"));
+        //client = new ClientBuilder().withToken(TOKEN).build();
+        //client.getDispatcher().registerListener(new HandieBot());
+        //client.login();
     }
 
     /**
