@@ -33,7 +33,6 @@ public class BotWindow extends JFrame {
     public BotWindow(){
         super(HandieBot.APPLICATION_NAME);
         //Setup GUI
-
         //Output area.
         outputArea = new JTextPane();
         outputArea.setBackground(Color.white);
@@ -45,16 +44,17 @@ public class BotWindow extends JFrame {
         //Playlist shower
         JPanel playlistSub = new JPanel(new BorderLayout());
         JTextPane textPane = new JTextPane();
+        textPane.setEditable(false);
         JScrollPane playlist = new JScrollPane(textPane);
-        playlist.setPreferredSize(new Dimension(200, 200));
+        playlist.setPreferredSize(new Dimension(250, 200));
         playlistSub.add(playlist, BorderLayout.PAGE_END);
-        getContentPane().add(playlistSub, BorderLayout.EAST);
 
         //PlaylistList maker
         JList<String> list = setPlayListListArea(textPane);
         JScrollPane playlistList = new JScrollPane(list);
-        playlistList.setPreferredSize(new Dimension(200, 1000));
+        playlistList.setPreferredSize(new Dimension(250, 1000));
         playlistSub.add(playlistList, BorderLayout.CENTER);
+        getContentPane().add(playlistSub, BorderLayout.EAST);
 
         //Command field.
         JTextField commandField = new JTextField();
@@ -82,10 +82,11 @@ public class BotWindow extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        setJMenuBar(new MenuBar());
+        setJMenuBar(new MenuBar(this));
         SelectionController controller = new SelectionController();
         setPreferredSize(new Dimension(800, 600));
         pack();
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 
