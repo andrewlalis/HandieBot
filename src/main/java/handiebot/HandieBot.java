@@ -93,7 +93,7 @@ public class HandieBot {
 
     public static void main(String[] args) throws DiscordException, RateLimitException {
 
-        //musicPlayer = new MusicPlayer();
+        musicPlayer = new MusicPlayer();
 
         List<String> argsList = Arrays.asList(args);
 

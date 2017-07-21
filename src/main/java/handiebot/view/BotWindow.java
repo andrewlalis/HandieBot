@@ -1,23 +1,16 @@
 package handiebot.view;
 
 import handiebot.HandieBot;
-import handiebot.command.SelectionController;
 import handiebot.lavaplayer.playlist.Playlist;
+import handiebot.lavaplayer.playlist.UnloadedTrack;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
 import java.util.List;
 
 import static handiebot.HandieBot.resourceBundle;
@@ -28,7 +21,15 @@ import static handiebot.HandieBot.resourceBundle;
  */
 public class BotWindow extends JFrame {
 
+    //Console output panel.
     private JTextPane outputArea;
+
+    //Playlist display variables.
+    private DefaultListModel<String> playlistNamesModel;
+    private DefaultListModel<String> currentPlaylistModel;
+    private JList<String> playlistNamesList;
+    private JList<String> currentPlaylistList;
+    private ListSelectionListener playlistListener;
 
     public BotWindow(){
         super(HandieBot.APPLICATION_NAME);
@@ -42,19 +43,32 @@ public class BotWindow extends JFrame {
         getContentPane().add(scrollPane, BorderLayout.CENTER);
 
         //Playlist shower
-        JPanel playlistSub = new JPanel(new BorderLayout());
-        JTextPane textPane = new JTextPane();
-        textPane.setEditable(false);
-        JScrollPane playlist = new JScrollPane(textPane);
-        playlist.setPreferredSize(new Dimension(250, 200));
-        playlistSub.add(playlist, BorderLayout.PAGE_END);
+        this.playlistNamesModel = new DefaultListModel<>();
+        this.currentPlaylistModel = new DefaultListModel<>();
+        this.playlistNamesList = new JList<>(this.playlistNamesModel);
+        this.playlistNamesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.currentPlaylistList = new JList<>(this.currentPlaylistModel);
+        this.currentPlaylistList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        this.playlistListener = e -> {
+            System.out.println("user updated list.");
+            updatePlaylistData();
+        };
+        this.playlistNamesList.addListSelectionListener(this.playlistListener);
+        updatePlaylistData();
 
-        //PlaylistList maker
-        JList<String> list = setPlayListListArea(textPane);
-        JScrollPane playlistList = new JScrollPane(list);
-        playlistList.setPreferredSize(new Dimension(250, 1000));
-        playlistSub.add(playlistList, BorderLayout.CENTER);
-        getContentPane().add(playlistSub, BorderLayout.EAST);
+        JPanel playlistDisplayPanel = new JPanel(new BorderLayout());
+
+        //Song names scroll pane.
+        JScrollPane songNamesScrollPane = new JScrollPane(this.currentPlaylistList);
+        songNamesScrollPane.setPreferredSize(new Dimension(250, 200));
+        playlistDisplayPanel.add(songNamesScrollPane, BorderLayout.PAGE_END);
+
+        //Playlist name scroll pane.
+        JScrollPane playlistNamesScrollPane = new JScrollPane(playlistNamesList);
+        playlistNamesScrollPane.setPreferredSize(new Dimension(250, 1000));
+        playlistDisplayPanel.add(playlistNamesScrollPane, BorderLayout.CENTER);
+
+        getContentPane().add(playlistDisplayPanel, BorderLayout.EAST);
 
         //Command field.
         JTextField commandField = new JTextField();
@@ -77,31 +91,46 @@ public class BotWindow extends JFrame {
                 }
             }
         });
+
+        //Attempt to set the icon of the window.
         try {
             setIconImage(ImageIO.read(getClass().getClassLoader().getResourceAsStream("avatarIcon.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
         setJMenuBar(new MenuBar(this));
-        SelectionController controller = new SelectionController();
+        //SelectionController controller = new SelectionController();
         setPreferredSize(new Dimension(800, 600));
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
-
-    private JList<String> setPlayListListArea(JTextPane pane) {
-        List<String> playlistList = Playlist.getAvailablePlaylists();
-        String labels[] = new String[playlistList.size()];
-        int i=0;
-        for (String playlist : playlistList) {
-            labels[i] = playlist;
-            i++;
+    /**
+     * Sets the playlist data in the window.
+     */
+    private void updatePlaylistData() {
+        List<String> playlistNames = Playlist.getAvailablePlaylists();
+        this.playlistNamesList.removeListSelectionListener(this.playlistListener);
+        this.playlistNamesModel.clear();
+        for (String name : playlistNames){
+            this.playlistNamesModel.addElement(name);
         }
-        JList<String> list = new JList<>(labels);
-        list.addListSelectionListener(e -> {
-            String name = list.getSelectedValue();
+        this.playlistNamesList.addListSelectionListener(this.playlistListener);
+        String selectedValue = this.playlistNamesList.getSelectedValue();
+        System.out.println("selected value: "+selectedValue);
+        if (selectedValue != null && Playlist.playlistExists(selectedValue)){
+            Playlist playlist = new Playlist(selectedValue);
+            playlist.load();
+            List<UnloadedTrack> tracks = playlist.getTracks();
+            this.currentPlaylistModel.clear();
+            for (int i = 0; i < playlist.getTrackCount(); i++){
+                this.currentPlaylistModel.addElement(tracks.get(i).getTitle());
+            }
+        }
+        /*
+        this.playlistNamesList.addListSelectionListener(e -> {
+            String name = playlistNamesList.getSelectedValue();
             String path = System.getProperty("user.home") + "/.handiebot/playlist/" + name + ".txt";
             File playlistFile = new File(path);
             if (playlistFile.exists()) {
@@ -121,8 +150,7 @@ public class BotWindow extends JFrame {
                     ioe.printStackTrace();
                 }
             }
-        });
-        return list;
+        });*/
     }
 
     public JTextPane getOutputArea(){

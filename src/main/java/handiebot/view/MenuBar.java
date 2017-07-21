@@ -1,7 +1,6 @@
 package handiebot.view;
 
 import handiebot.command.Commands;
-import handiebot.command.commands.interfaceActions.PlaylistAction;
 import handiebot.view.actions.ActionItem;
 import handiebot.view.actions.CommandAction;
 
@@ -22,7 +21,6 @@ public class MenuBar extends JMenuBar {
         this.window = window;
         JMenu fileMenu = new JMenu(resourceBundle.getString("menu.fileMenu.title"));
             fileMenu.add(new ActionItem(resourceBundle.getString("menu.fileMenu.quit"), new CommandAction(Commands.get("quit"))));
-            fileMenu.add(new PlaylistAction());
             this.add(fileMenu);
         JMenu viewMenu = new JMenu(resourceBundle.getString("menu.viewMenu.view"));
             JMenu language =  new JMenu(resourceBundle.getString("menu.viewMenu.language"));
