@@ -20,8 +20,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static handiebot.HandieBot.log;
-import static handiebot.HandieBot.resourceBundle;
+import static handiebot.HandieBot.*;
 import static handiebot.utils.MessageUtils.sendMessage;
 import static handiebot.utils.YoutubeSearch.WATCH_URL;
 
@@ -101,13 +100,16 @@ public class PlaylistCommand extends ContextCommand {
         if (context.getArgs().length >= 2) {
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.save();
-            for (int i = 2; i < context.getArgs().length; i++){
-                String url = context.getArgs()[i];
-                playlist.loadTrack(url);
+            if (context.getArgs().length > 2) {
+                for (int i = 2; i < context.getArgs().length; i++) {
+                    String url = context.getArgs()[i];
+                    playlist.loadTrack(url);
+                }
+                playlist.save();
             }
-            playlist.save();
             log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.createdPlaylist.log"), playlist.getName(), playlist.getTrackCount()));
             sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.createdPlaylist.message"), playlist.getName(), this.getPrefixedName(context.getGuild()), playlist.getName()), context.getChannel());
+            window.updatePlaylistNames();//Refresh the list of names in the GUI.
         } else {
             sendMessage(resourceBundle.getString("commands.command.playlist.error.createPlaylistName"), context.getChannel());
         }
@@ -126,6 +128,7 @@ public class PlaylistCommand extends ContextCommand {
             if (success){
                 log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.delete.log"), context.getArgs()[1]));
                 sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.delete.message"), context.getArgs()[1]), context.getChannel());
+                window.updatePlaylistNames();//Refresh the list of names in the GUI.
             } else {
                 log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("commands.command.playlist.error.delete.log"), context.getArgs()[1]));
                 sendMessage(resourceBundle.getString("commands.command.playlist.error.delete.message"), context.getChannel());

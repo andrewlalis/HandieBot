@@ -22,7 +22,7 @@ import static handiebot.HandieBot.resourceBundle;
  * on the playlist.
  */
 public class Playlist {
-
+//TODO: Externalize strings.
     private String name;
 
     private List<UnloadedTrack> tracks;
@@ -119,7 +119,7 @@ public class Playlist {
      * @param listLength The number of items in a potential list to choose from.
      * @return A pseudo-random choice as to which item to pick from the list.
      */
-    public static int getShuffledIndex(int listLength){
+    private static int getShuffledIndex(int listLength){
         float threshold = 0.2f;
         int trueLength = listLength - (int)(threshold*(float)listLength);
         Random rand = new Random();
@@ -160,13 +160,11 @@ public class Playlist {
      */
     public void load(){
         String path = System.getProperty("user.home")+"/.handiebot/playlist/"+name.replace(" ", "_")+".txt";
-        log.log(BotLog.TYPE.MUSIC, "Loading playlist from: "+path);
         File playlistFile = new File(path);
         if (playlistFile.exists()){
             try {
                 List<String> lines = Files.readAllLines(Paths.get(playlistFile.toURI()));
                 int trackCount = Integer.parseInt(lines.remove(0));
-                this.name = name;
                 this.tracks = new ArrayList<>(trackCount);
                 for (int i = 0; i < trackCount; i++){
                     String[] words = lines.remove(0).split(" / ");

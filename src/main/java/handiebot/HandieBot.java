@@ -30,7 +30,9 @@ import java.util.*;
  */
 public class HandieBot {
 
+    //Application name is the name of application as it appears on display window.
     public static final String APPLICATION_NAME = "HandieBot";
+    //The token required for logging into Discord. This is secure and must not be in the source code on GitHub.
     private static final String TOKEN;
     static {
         TOKEN = readToken();
@@ -39,15 +41,16 @@ public class HandieBot {
             System.exit(-1);
         }
     }
+    //Variable to enable or disable GUI.
     private static boolean USE_GUI = true;
-
-    public static final ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings");
+    //Resource bundle for localized strings.
+    public static ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings");
 
     //Discord client object.
     public static IDiscordClient client;
 
     //Display objects.
-    private static BotWindow window;
+    public static BotWindow window;
     public static BotLog log;
 
     //The cross-guild music player.

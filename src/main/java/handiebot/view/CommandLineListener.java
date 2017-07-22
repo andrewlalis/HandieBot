@@ -1,10 +1,18 @@
 package handiebot.view;
 
-import handiebot.command.Commands;
+import handiebot.HandieBot;
+import handiebot.command.CommandContext;
+import handiebot.command.types.Command;
+import handiebot.command.types.CommandLineCommand;
+import handiebot.command.types.ContextCommand;
+import handiebot.command.types.StaticCommand;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+
+import static handiebot.HandieBot.log;
+import static handiebot.command.Commands.commands;
 
 /**
  * @author Andrew Lalis
@@ -26,7 +34,7 @@ public class CommandLineListener implements KeyListener {
             String command = words[0];
             String[] args = new String[words.length-1];
             System.arraycopy(words, 1, args, 0, words.length - 1);
-            executeCommand(command, args);
+            executeCommand(command, new CommandContext(HandieBot.client.getOurUser(), null, null, args));
         }
     }
 
@@ -35,15 +43,21 @@ public class CommandLineListener implements KeyListener {
     }
 
     /**
-     * Executes a given command on the command line.
+     * Executes a given command on the command line. This must be written separate from the {@code executeCommand}
+     * method in {@code Commands}, because here, no permissions may be checked.
      * @param command The first word typed, or the command itself.
-     * @param args The list of arguments for the command.
+     * @param context The list of arguments for the command.
      */
-    private void executeCommand(String command, String[] args) {
-        switch (command) {
-            case "quit":
-                Commands.executeCommand("quit", null);
-                break;
+    private void executeCommand(String command, CommandContext context) {
+        for (Command cmd : commands){
+            if (cmd.getName().equals(command) && (cmd instanceof CommandLineCommand)){
+                log.log(BotLog.TYPE.COMMAND, "Command issued: "+command);
+                if (cmd instanceof StaticCommand){
+                    ((StaticCommand) cmd).execute();
+                } else if (cmd instanceof ContextCommand){
+                    ((ContextCommand) cmd).execute(context);
+                }
+            }
         }
     }
 }

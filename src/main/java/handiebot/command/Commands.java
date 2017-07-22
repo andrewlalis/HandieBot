@@ -1,5 +1,6 @@
 package handiebot.command;
 
+import handiebot.command.commands.admin.BroadcastCommand;
 import handiebot.command.commands.admin.QuitCommand;
 import handiebot.command.commands.admin.SetPrefixCommand;
 import handiebot.command.commands.misc.TengwarCommand;
@@ -42,6 +43,7 @@ public class Commands {
         commands.add(new InfoCommand());
         commands.add(new SetPrefixCommand());
         commands.add(new QuitCommand());
+        commands.add(new BroadcastCommand());
         commands.add(new TengwarCommand());
     }
 

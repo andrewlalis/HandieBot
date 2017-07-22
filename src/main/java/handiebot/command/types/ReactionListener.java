@@ -8,6 +8,6 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.Reactio
  */
 public interface ReactionListener {
 
-    public void onReactionEvent(ReactionEvent event);
+    void onReactionEvent(ReactionEvent event);
 
 }
