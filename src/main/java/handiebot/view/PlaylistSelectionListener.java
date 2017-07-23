@@ -1,12 +1,11 @@
 package handiebot.view;
 
 import handiebot.lavaplayer.playlist.Playlist;
-import handiebot.lavaplayer.playlist.UnloadedTrack;
+import handiebot.view.tableModels.SongsTableModel;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.util.List;
 
 /**
  * @author Andrew Lalis
@@ -14,16 +13,24 @@ import java.util.List;
  */
 public class PlaylistSelectionListener implements ListSelectionListener {
 
-    private DefaultListModel<String> songsListModel;
+    //The table model for the songs list.
+    private SongsTableModel songsModel;
 
-    public PlaylistSelectionListener(DefaultListModel<String> songsListModel){
-        this.songsListModel = songsListModel;
+    //The table that shows the playlist names.
+    private JTable table;
+    private JTable songsTable;
+
+    public PlaylistSelectionListener(SongsTableModel songsModel, JTable table, JTable songsTable){
+        this.songsModel = songsModel;
+        this.table = table;
+        this.songsTable = songsTable;
     }
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
         if (e.getValueIsAdjusting()){
-            updatePlaylistData((JList<String>) e.getSource());
+            updatePlaylistData();
+            BotWindow.autoSizeTable(songsTable);
         }
     }
 
@@ -31,16 +38,12 @@ public class PlaylistSelectionListener implements ListSelectionListener {
      * Updates the list of songs for a selected playlist.
      * Does not update the list of playlists.
      */
-    private void updatePlaylistData(JList<String> playlistNamesList) {
-        String selectedValue = playlistNamesList.getSelectedValue();
+    private void updatePlaylistData() {
+        String selectedValue = (String) this.table.getModel().getValueAt(this.table.getSelectedRow(), 0);
         if (selectedValue != null && Playlist.playlistExists(selectedValue)){
             Playlist playlist = new Playlist(selectedValue);
             playlist.load();
-            List<UnloadedTrack> tracks = playlist.getTracks();
-            songsListModel.clear();
-            for (int i = 0; i < playlist.getTrackCount(); i++){
-                songsListModel.addElement(tracks.get(i).getTitle());
-            }
+            this.songsModel.setPlaylist(playlist);
         }
     }
 

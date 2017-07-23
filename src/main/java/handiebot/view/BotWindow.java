@@ -1,16 +1,18 @@
 package handiebot.view;
 
 import handiebot.HandieBot;
-import handiebot.lavaplayer.playlist.Playlist;
+import handiebot.view.tableModels.PlaylistTableModel;
+import handiebot.view.tableModels.SongsTableModel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.List;
 
 import static handiebot.HandieBot.resourceBundle;
 
@@ -24,10 +26,8 @@ public class BotWindow extends JFrame {
     private JTextPane outputArea;
 
     //Playlist display variables.
-    private DefaultListModel<String> playlistNamesModel;
-    private DefaultListModel<String> currentPlaylistModel;
-    private JList<String> playlistNamesList;
-    private JList<String> currentPlaylistList;
+    private PlaylistTableModel playlistTableModel;
+    private SongsTableModel songsTableModel;
     private ListSelectionListener playlistListener;
     private JPanel playlistDisplayPanel;
 
@@ -43,29 +43,30 @@ public class BotWindow extends JFrame {
         scrollPane.setAutoscrolls(true);
         getContentPane().add(scrollPane, BorderLayout.CENTER);
 
-        //Playlist shower
-        this.playlistNamesModel = new DefaultListModel<>();
-        this.currentPlaylistModel = new DefaultListModel<>();
-        this.playlistNamesList = new JList<>(this.playlistNamesModel);
-        this.playlistNamesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.currentPlaylistList = new JList<>(this.currentPlaylistModel);
-        this.currentPlaylistList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-        updatePlaylistNames();
-        this.playlistNamesList.addListSelectionListener(new PlaylistSelectionListener(this.currentPlaylistModel));
-
-        //Create the panel to hold both of the sub-panels.
+        //updatePlaylistNames();
         playlistDisplayPanel = new JPanel();
         playlistDisplayPanel.setPreferredSize(new Dimension(250, 0));
         playlistDisplayPanel.setLayout(new BorderLayout());
 
+        this.songsTableModel = new SongsTableModel();
+        this.playlistTableModel = new PlaylistTableModel();
+
+        JTable songsTable = new JTable(this.songsTableModel);
+        JTable playlistTable = new JTable(playlistTableModel);
+
         //Playlist name scroll pane.
-        JScrollPane playlistNamesScrollPane = new JScrollPane(playlistNamesList);
-        playlistNamesScrollPane.setColumnHeaderView(new JLabel("Playlists"));
+        playlistTable.setRowSelectionAllowed(true);
+        playlistTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        playlistTable.getSelectionModel().addListSelectionListener(new PlaylistSelectionListener(this.songsTableModel, playlistTable, songsTable));
+        JScrollPane playlistNamesScrollPane = new JScrollPane(playlistTable);
+        playlistNamesScrollPane.setPreferredSize(new Dimension(250, 200));
         playlistDisplayPanel.add(playlistNamesScrollPane, BorderLayout.PAGE_START);
 
         //Song names scroll pane.
-        JScrollPane songNamesScrollPane = new JScrollPane(this.currentPlaylistList);
+        songsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        songsTable.setRowSelectionAllowed(true);
+        songsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        JScrollPane songNamesScrollPane = new JScrollPane(songsTable);
         songNamesScrollPane.setColumnHeaderView(new JLabel("Selected Playlist"));
         playlistDisplayPanel.add(songNamesScrollPane, BorderLayout.CENTER);
 
@@ -110,11 +111,7 @@ public class BotWindow extends JFrame {
      * Updates the list of playlist names.
      */
     public void updatePlaylistNames(){
-        List<String> playlistNames = Playlist.getAvailablePlaylists();
-        this.playlistNamesModel.clear();
-        for (String name : playlistNames){
-            this.playlistNamesModel.addElement(name);
-        }
+        this.playlistTableModel = new PlaylistTableModel();
     }
 
     /**
@@ -122,6 +119,25 @@ public class BotWindow extends JFrame {
      */
     public void togglePlaylistsVisibility(){
         this.playlistDisplayPanel.setVisible(!this.playlistDisplayPanel.isVisible());
+    }
+
+    /**
+     * Automatically resizes a table to shrink the index column.
+     * @param table The table to resize.
+     */
+    public static void autoSizeTable(JTable table){
+        final TableColumnModel columnModel = table.getColumnModel();
+        int freeSpace = 230;
+        for (int col = 0; col < columnModel.getColumnCount(); col++) {
+            int width = 0;
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, col);
+                Component component = table.prepareRenderer(renderer, row, col);
+                width = Math.max(component.getPreferredSize().width + 1, width);
+            }
+            columnModel.getColumn(col).setPreferredWidth(width);
+            freeSpace -= width;
+        }
     }
 
     public JTextPane getOutputArea(){

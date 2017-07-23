@@ -17,9 +17,7 @@ import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RateLimitException;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -32,6 +30,7 @@ public class HandieBot {
 
     //Application name is the name of application as it appears on display window.
     public static final String APPLICATION_NAME = "HandieBot";
+
     //The token required for logging into Discord. This is secure and must not be in the source code on GitHub.
     private static final String TOKEN;
     static {
@@ -43,8 +42,22 @@ public class HandieBot {
     }
     //Variable to enable or disable GUI.
     private static boolean USE_GUI = true;
+
+    //Settings for the bot. Tries to load the settings, or if that doesn't work, it will load defaults.
+    public static Properties settings;
+    static{
+        try {
+            Properties defaultSettings = new Properties();
+            defaultSettings.load(HandieBot.class.getClassLoader().getResourceAsStream("default_settings"));
+            settings = new Properties(defaultSettings);
+            settings.load(new FileInputStream(FileUtil.getDataDirectory()+"settings"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     //Resource bundle for localized strings.
-    public static ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings");
+    public static ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings", Locale.forLanguageTag(settings.getProperty("language")));
 
     //Discord client object.
     public static IDiscordClient client;
@@ -150,6 +163,11 @@ public class HandieBot {
         musicPlayer.quitAll();
         client.logout();
         window.dispose();
+        try {
+            settings.store(new FileWriter(FileUtil.getDataDirectory()+"settings"), "Settings for HandieBot");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.exit(0);
     }
 
