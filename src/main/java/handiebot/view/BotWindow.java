@@ -7,8 +7,6 @@ import handiebot.view.tableModels.SongsTableModel;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -57,6 +55,7 @@ public class BotWindow extends JFrame {
         //Playlist name scroll pane.
         playlistTable.setRowSelectionAllowed(true);
         playlistTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        playlistTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         playlistTable.getSelectionModel().addListSelectionListener(new PlaylistSelectionListener(this.songsTableModel, playlistTable, songsTable));
         JScrollPane playlistNamesScrollPane = new JScrollPane(playlistTable);
         playlistNamesScrollPane.setPreferredSize(new Dimension(250, 200));
@@ -119,25 +118,6 @@ public class BotWindow extends JFrame {
      */
     public void togglePlaylistsVisibility(){
         this.playlistDisplayPanel.setVisible(!this.playlistDisplayPanel.isVisible());
-    }
-
-    /**
-     * Automatically resizes a table to shrink the index column.
-     * @param table The table to resize.
-     */
-    public static void autoSizeTable(JTable table){
-        final TableColumnModel columnModel = table.getColumnModel();
-        int freeSpace = 230;
-        for (int col = 0; col < columnModel.getColumnCount(); col++) {
-            int width = 0;
-            for (int row = 0; row < table.getRowCount(); row++) {
-                TableCellRenderer renderer = table.getCellRenderer(row, col);
-                Component component = table.prepareRenderer(renderer, row, col);
-                width = Math.max(component.getPreferredSize().width + 1, width);
-            }
-            columnModel.getColumn(col).setPreferredWidth(width);
-            freeSpace -= width;
-        }
     }
 
     public JTextPane getOutputArea(){
