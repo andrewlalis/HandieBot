@@ -92,6 +92,10 @@ public class UnloadedTrack implements Cloneable {
         return this.title;
     }
 
+    public void setTitle(String newTitle){
+        this.title = newTitle;
+    }
+
     public String getURL(){
         return this.url;
     }

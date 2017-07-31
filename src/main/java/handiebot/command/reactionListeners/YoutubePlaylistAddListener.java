@@ -4,8 +4,10 @@ import handiebot.lavaplayer.playlist.Playlist;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
 
+import java.text.MessageFormat;
 import java.util.List;
 
+import static handiebot.HandieBot.resourceBundle;
 import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
@@ -13,7 +15,7 @@ import static handiebot.utils.MessageUtils.sendMessage;
  * Specific Listener for adding songs to a playlist that must be saved.
  */
 public class YoutubePlaylistAddListener extends YoutubeChoiceListener {
-    //TODO: externalize strings
+
     private Playlist playlist;
 
     public YoutubePlaylistAddListener(IMessage message, IUser user, List<String> urls, Playlist playlist) {
@@ -25,6 +27,6 @@ public class YoutubePlaylistAddListener extends YoutubeChoiceListener {
     protected void onChoice(int choice) {
         this.playlist.loadTrack(this.urls.get(choice));
         this.playlist.save();
-        sendMessage("Added song to *"+this.playlist.getName()+"*.", message.getChannel());
+        sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.message"), this.playlist.getName()), message.getChannel());
     }
 }

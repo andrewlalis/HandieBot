@@ -1,11 +1,16 @@
 package handiebot.lavaplayer.playlist;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import handiebot.utils.Pastebin;
 import handiebot.view.BotLog;
+import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import sx.blah.discord.util.EmbedBuilder;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +27,7 @@ import static handiebot.HandieBot.resourceBundle;
  * on the playlist.
  */
 public class Playlist {
-//TODO: Externalize strings.
+
     private String name;
 
     private List<UnloadedTrack> tracks;
@@ -104,9 +109,9 @@ public class Playlist {
         try {
             UnloadedTrack track = new UnloadedTrack(url);
             this.tracks.add(track);
-            log.log(BotLog.TYPE.MUSIC, "Added "+track.getTitle()+" to playlist ["+this.name+"].");
+            log.log(BotLog.TYPE.MUSIC, MessageFormat.format(resourceBundle.getString("playlist.loadTrack.log"), track.getTitle(), this.name));
         } catch (Exception e) {
-            log.log(BotLog.TYPE.ERROR, "Unable to add "+url+" to the playlist ["+this.name+"].");
+            log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("playlist.loadTrack.error"), url, this.name));
             e.printStackTrace();
         }
     }
@@ -135,12 +140,11 @@ public class Playlist {
         File playlistDir = new File(homeDir+"/.handiebot/playlist");
         if (!playlistDir.exists()){
             if (!playlistDir.mkdirs()){
-                log.log(BotLog.TYPE.ERROR, "Unable to make directory: "+playlistDir.getPath());
+                log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("playlist.save.error.directory"), playlistDir.getPath()));
                 return;
             }
         }
         File playlistFile = new File(playlistDir.getPath()+"/"+this.name.replace(" ", "_")+".txt");
-        log.log(BotLog.TYPE.INFO, "Saving playlist to: "+playlistFile.getAbsolutePath());
         try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(playlistFile)))){
             writer.write(Integer.toString(this.tracks.size())+'\n');
             for (UnloadedTrack track : this.tracks){
@@ -148,7 +152,7 @@ public class Playlist {
                 writer.write('\n');
             }
         } catch (FileNotFoundException e) {
-            log.log(BotLog.TYPE.ERROR, "Unable to find file to write playlist: "+this.name);
+            log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("playlist.save.error.fileNotFound"), this.name));
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -171,11 +175,11 @@ public class Playlist {
                     this.tracks.add(new UnloadedTrack(words[0], words[1], Long.parseLong(words[2])));
                 }
             } catch (IOException e) {
-                log.log(BotLog.TYPE.ERROR, "IOException while loading playlist ["+this.name+"]. "+e.getMessage());
+                log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("playlist.load.error.IOException"), this.name, e.getMessage()));
                 e.printStackTrace();
             }
         } else {
-            log.log(BotLog.TYPE.ERROR, "The playlist ["+this.name+"] does not exist.");
+            log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("playlist.load.error.exists"), this.name));
         }
     }
 
@@ -221,6 +225,26 @@ public class Playlist {
             }
         }
         return sb.toString();
+    }
+
+    public EmbedObject getEmbed(){
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.withTitle(this.getName());
+        eb.withFooterText(this.getTrackCount()+" tracks.");
+        eb.withColor(Color.red);
+        StringBuilder sb = new StringBuilder();
+        boolean needsPastebin = this.getTrackCount() > 20;
+        for (int i = 0; i < this.getTrackCount(); i++){
+            sb.append(i+1).append(". ").append(this.tracks.get(i).getTitle()).append(' ').append(this.tracks.get(i).getFormattedDuration()).append('\n');
+        }
+        if (needsPastebin){
+            String result = Pastebin.paste(this.getName(), sb.toString());
+            eb.withUrl(result);
+            eb.withDescription(resourceBundle.getString("playlist.embedTooLarge"));
+        } else {
+            eb.withDescription(sb.toString());
+        }
+        return eb.build();
     }
 
 }

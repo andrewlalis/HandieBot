@@ -1,12 +1,14 @@
 package handiebot.view;
 
 import handiebot.HandieBot;
+import handiebot.view.listeners.CommandLineListener;
+import handiebot.view.listeners.PlaylistSelectionListener;
+import handiebot.view.listeners.SongRenameListener;
 import handiebot.view.tableModels.PlaylistTableModel;
 import handiebot.view.tableModels.SongsTableModel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -26,7 +28,6 @@ public class BotWindow extends JFrame {
     //Playlist display variables.
     private PlaylistTableModel playlistTableModel;
     private SongsTableModel songsTableModel;
-    private ListSelectionListener playlistListener;
     private JPanel playlistDisplayPanel;
 
     public BotWindow(){
@@ -54,19 +55,29 @@ public class BotWindow extends JFrame {
 
         //Playlist name scroll pane.
         playlistTable.setRowSelectionAllowed(true);
+        playlistTable.setDragEnabled(false);
+        playlistTable.getTableHeader().setResizingAllowed(false);
+        playlistTable.getTableHeader().setReorderingAllowed(false);
         playlistTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         playlistTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         playlistTable.getSelectionModel().addListSelectionListener(new PlaylistSelectionListener(this.songsTableModel, playlistTable, songsTable));
         JScrollPane playlistNamesScrollPane = new JScrollPane(playlistTable);
+        playlistNamesScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         playlistNamesScrollPane.setPreferredSize(new Dimension(250, 200));
+        playlistTable.getColumnModel().getColumn(0).setPreferredWidth(190);
+        playlistTable.getColumnModel().getColumn(1).setPreferredWidth(42);
         playlistDisplayPanel.add(playlistNamesScrollPane, BorderLayout.PAGE_START);
 
         //Song names scroll pane.
         songsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        songsTable.setDragEnabled(false);
+        songsTable.getTableHeader().setResizingAllowed(false);
+        songsTable.getTableHeader().setReorderingAllowed(false);
         songsTable.setRowSelectionAllowed(true);
         songsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        songsTable.addMouseListener(new SongRenameListener());
         JScrollPane songNamesScrollPane = new JScrollPane(songsTable);
-        songNamesScrollPane.setColumnHeaderView(new JLabel("Selected Playlist"));
+        songNamesScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         playlistDisplayPanel.add(songNamesScrollPane, BorderLayout.CENTER);
 
         getContentPane().add(playlistDisplayPanel, BorderLayout.EAST);
@@ -110,7 +121,7 @@ public class BotWindow extends JFrame {
      * Updates the list of playlist names.
      */
     public void updatePlaylistNames(){
-        this.playlistTableModel = new PlaylistTableModel();
+        this.playlistTableModel.loadPlaylistData();
     }
 
     /**

@@ -43,13 +43,14 @@ public class QueueCommand extends ContextCommand {
                     }
                     break;
                 case ("save"):
-                    //TODO: add some error messages so users know how to use this.
                     if (context.getArgs().length == 2 && Commands.hasPermission(context, 8)) {
                         Playlist p = HandieBot.musicPlayer.getAllSongsInQueue(context.getGuild());
                         p.setName(context.getArgs()[1]);
                         p.save();
                         sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.queue.save.message"), p.getTrackCount(), p.getName()), context.getChannel());
                         log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.queue.save.log"), p.getName()));
+                    } else {
+                        sendMessage(resourceBundle.getString("commands.command.queue.error.save"), context.getChannel());
                     }
                     break;
             }

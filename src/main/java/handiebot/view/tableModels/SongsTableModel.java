@@ -45,6 +45,12 @@ public class SongsTableModel extends AbstractTableModel {
         return data[rowIndex][columnIndex];
     }
 
+    @Override
+    public void setValueAt(Object obj, int rowIndex, int columnIndex){
+        this.data[rowIndex][columnIndex] = (String) obj;
+        this.fireTableDataChanged();
+    }
+
     public void setPlaylist(Playlist playlist){
         this.data = new String[playlist.getTrackCount()][columnNames.length];
         for (int i = 0; i < playlist.getTrackCount(); i++){

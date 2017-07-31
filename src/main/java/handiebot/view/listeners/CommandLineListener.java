@@ -1,4 +1,4 @@
-package handiebot.view;
+package handiebot.view.listeners;
 
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
@@ -6,6 +6,7 @@ import handiebot.command.types.Command;
 import handiebot.command.types.CommandLineCommand;
 import handiebot.command.types.ContextCommand;
 import handiebot.command.types.StaticCommand;
+import handiebot.view.BotLog;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;

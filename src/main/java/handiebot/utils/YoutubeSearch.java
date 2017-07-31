@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static handiebot.HandieBot.APPLICATION_NAME;
+import static handiebot.HandieBot.resourceBundle;
 import static handiebot.utils.MessageUtils.addReaction;
 import static handiebot.utils.MessageUtils.sendMessage;
 
@@ -44,7 +46,7 @@ import static handiebot.utils.MessageUtils.sendMessage;
  * Class to query Youtube Data API for results to searches, and return these in a nice list.
  */
 public class YoutubeSearch {
-//TODO: Externalize Strings
+
     private static final String KEY =  "AIzaSyAjYuxCYBCuZCNvW4w573LQ-jw5UKL64G8";
     private static final int NUMBER_OF_VIDEOS_RETURNED = 5;
 
@@ -153,7 +155,7 @@ public class YoutubeSearch {
     public static EmbedObject createEmbed(List<Video> results){
         EmbedBuilder builder = new EmbedBuilder();
         if (results != null) {
-            builder.withTitle("Showing the first " + NUMBER_OF_VIDEOS_RETURNED + " results from YouTube.com");
+            builder.withTitle(MessageFormat.format(resourceBundle.getString("commands.youtube.title"), NUMBER_OF_VIDEOS_RETURNED));
             builder.withColor(Color.red);
             for (int i = 0; i < results.size(); i++) {
                 Video video = results.get(i);
@@ -186,7 +188,7 @@ public class YoutubeSearch {
                                 "\n"+ WATCH_URL + video.getId(),
                         false);
             }
-            builder.withFooterText("Please add a reaction to select a song, or cancel. Choice times out in 30 seconds.");
+            builder.withFooterText(resourceBundle.getString("commands.youtube.footerInstruction"));
         }
         return builder.build();
     }

@@ -1,4 +1,4 @@
-package handiebot.view;
+package handiebot.view.listeners;
 
 import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.utils.TableColumnAdjuster;
@@ -19,15 +19,12 @@ public class PlaylistSelectionListener implements ListSelectionListener {
 
     //The table that shows the playlist names.
     private JTable table;
-    //The table for the songs.
     private JTable songsTable;
-    private TableColumnAdjuster tca;
 
     public PlaylistSelectionListener(SongsTableModel songsModel, JTable table, JTable songsTable){
         this.songsModel = songsModel;
         this.table = table;
         this.songsTable = songsTable;
-        this.tca = new TableColumnAdjuster(songsTable);
     }
 
     @Override
@@ -47,7 +44,8 @@ public class PlaylistSelectionListener implements ListSelectionListener {
             Playlist playlist = new Playlist(selectedValue);
             playlist.load();
             this.songsModel.setPlaylist(playlist);
-            this.tca.adjustColumns();
+            this.songsTable.setName(playlist.getName());
+            new TableColumnAdjuster(this.songsTable).adjustColumns();
         }
     }
 

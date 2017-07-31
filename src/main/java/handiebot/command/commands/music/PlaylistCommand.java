@@ -14,7 +14,9 @@ import handiebot.utils.YoutubeSearch;
 import handiebot.view.BotLog;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.util.EmbedBuilder;
 
+import java.awt.*;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -148,14 +150,20 @@ public class PlaylistCommand extends ContextCommand {
                 return;
             Playlist playlist = new Playlist(context.getArgs()[1]);
             playlist.load();
-            sendMessage(playlist.toString(), context.getChannel());
+            sendMessage(playlist.getEmbed(), context.getChannel());
         } else {
             List<String> playlists = Playlist.getAvailablePlaylists();
-            StringBuilder sb = new StringBuilder("**Playlists:**\n");
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.withTitle("Playlists:");
+            eb.withColor(Color.red);
+            StringBuilder sb = new StringBuilder();
             for (String playlist : playlists) {
-                sb.append(playlist).append('\n');
+                Playlist p = new Playlist(playlist);
+                p.load();
+                sb.append(p.getName()).append(", ").append(p.getTrackCount()).append(" tracks.\n");
             }
-            sendMessage(sb.toString(), context.getChannel());
+            eb.withDescription(sb.toString());
+            sendMessage(eb.build(), context.getChannel());
         }
     }
 
@@ -176,7 +184,6 @@ public class PlaylistCommand extends ContextCommand {
                     sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.message"), playlist.getName()), context.getChannel());
                 }
                 playlist.save();
-                sendMessage(playlist.toString(), context.getChannel());
                 log.log(BotLog.TYPE.INFO, MessageFormat.format(resourceBundle.getString("commands.command.playlist.add.log"), playlist.getName()));
             } else {
                 //This is a youtube search query.

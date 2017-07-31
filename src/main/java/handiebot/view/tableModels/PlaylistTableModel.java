@@ -19,14 +19,7 @@ public class PlaylistTableModel extends AbstractTableModel {
     private String[][] data;
 
     public PlaylistTableModel(){
-        List<String> playlistNames = Playlist.getAvailablePlaylists();
-        data = new String[playlistNames.size()][columnNames.length];
-        for (int i = 0; i < playlistNames.size(); i++){
-            data[i][0] = playlistNames.get(i);
-            Playlist p = new Playlist(playlistNames.get(i));
-            p.load();
-            data[i][1] = Integer.toString(p.getTrackCount());
-        }
+        loadPlaylistData();
     }
 
     @Override
@@ -53,4 +46,20 @@ public class PlaylistTableModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         return data[rowIndex][columnIndex];
     }
+
+    /**
+     * Loads from the file system a list of playlists and sets the data to the updated list.
+     */
+    public void loadPlaylistData(){
+        List<String> playlistNames = Playlist.getAvailablePlaylists();
+        data = new String[playlistNames.size()][columnNames.length];
+        for (int i = 0; i < playlistNames.size(); i++){
+            data[i][0] = playlistNames.get(i);
+            Playlist p = new Playlist(playlistNames.get(i));
+            p.load();
+            data[i][1] = Integer.toString(p.getTrackCount());
+        }
+        this.fireTableDataChanged();
+    }
+
 }
