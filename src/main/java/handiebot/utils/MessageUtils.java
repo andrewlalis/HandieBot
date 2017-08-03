@@ -49,11 +49,11 @@ public class MessageUtils {
      * @param channel The channel to send the message on.
      * @return The message that was sent, or null if the file could not be found.
      */
-    public static IMessage sendFile(File file, IChannel channel){
+    public static IMessage sendFile(File file, String content, IChannel channel){
         return RequestBuffer.request(() -> {
             IMessage msg = null;
             try {
-                msg = channel.sendFile(file);
+                msg = channel.sendFile(content, file);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }

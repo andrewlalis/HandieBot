@@ -6,9 +6,8 @@ import handiebot.utils.MessageUtils;
 import net.agspace.TengwarImageGenerator;
 import net.agspace.Translator;
 
-import java.io.FileNotFoundException;
-
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.utils.MessageUtils.sendFile;
 import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
@@ -31,17 +30,14 @@ public class TengwarCommand extends ContextCommand {
             String input = MessageUtils.getTextFromArgs(context.getArgs(), 1);
             if (context.getArgs()[0].equalsIgnoreCase("to")){
                 String result = Translator.translateToTengwar(input);
-                try {
-                    //TODO: replace with rate-limited send method.
-                    context.getChannel().sendFile("Raw text: `" +result+'`', TengwarImageGenerator.generateImage(result,
-                            600,
-                            24f,
-                            false,
-                            false,
-                            System.getProperty("user.home")+"/.handiebot/tengwarTemp.png"));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+                sendFile(TengwarImageGenerator.generateImage(result,
+                        600,
+                        24f,
+                        false,
+                        false,
+                        System.getProperty("user.home")+"/.handiebot/tengwarTemp.png"),
+                        "Raw text: `" +result+'`',
+                        context.getChannel());
             } else if (context.getArgs()[0].equalsIgnoreCase("from")){
                 sendMessage(Translator.translateToEnglish(input), context.getChannel());
             }

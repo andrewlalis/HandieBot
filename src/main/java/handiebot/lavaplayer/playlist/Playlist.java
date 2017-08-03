@@ -120,7 +120,6 @@ public class Playlist {
      * Gets a 'shuffled index' from a given list length. That means:
      * - A random number from 0 to (listLength-1) - threshold*(listLength), where threshold is some percentage of
      * recent songs that should be ignored; for example, the most recent 20% of the playlist can be ignored.
-     * - A greater likelihood for numbers closer to 0 (those which have not been played in a while).
      * @param listLength The number of items in a potential list to choose from.
      * @return A pseudo-random choice as to which item to pick from the list.
      */
@@ -128,7 +127,6 @@ public class Playlist {
         float threshold = 0.2f;
         int trueLength = listLength - (int)(threshold*(float)listLength);
         Random rand = new Random();
-        //TODO Add in a small gradient in chance for a song to be picked.
         return rand.nextInt(trueLength);
     }
 
