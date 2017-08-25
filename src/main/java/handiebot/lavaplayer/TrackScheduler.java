@@ -156,6 +156,16 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     /**
+     * Removes a song at a specified index from the queue.
+     * @param songIndex The index of the song to remove.
+     */
+    public void remove(int songIndex){
+        if (songIndex >= 0 && songIndex < this.activePlaylist.getTrackCount()){
+            this.activePlaylist.getTracks().remove(songIndex);
+        }
+    }
+
+    /**
      * Starts the next track, stopping the current one if it's playing.
      */
     public void nextTrack(){

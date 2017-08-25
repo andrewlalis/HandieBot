@@ -7,6 +7,7 @@ import handiebot.command.commands.misc.TengwarCommand;
 import handiebot.command.commands.music.*;
 import handiebot.command.commands.support.HelpCommand;
 import handiebot.command.commands.support.InfoCommand;
+import handiebot.command.commands.support.ReportCommand;
 import handiebot.command.types.Command;
 import handiebot.command.types.ContextCommand;
 import handiebot.command.types.StaticCommand;
@@ -41,6 +42,7 @@ public class Commands {
         //Other commands.
         commands.add(new HelpCommand());
         commands.add(new InfoCommand());
+        commands.add(new ReportCommand());
         commands.add(new SetPrefixCommand());
         commands.add(new QuitCommand());
         commands.add(new BroadcastCommand());

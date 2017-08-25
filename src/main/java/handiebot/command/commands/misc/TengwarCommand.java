@@ -6,6 +6,8 @@ import handiebot.utils.MessageUtils;
 import net.agspace.TengwarImageGenerator;
 import net.agspace.Translator;
 
+import java.awt.*;
+
 import static handiebot.HandieBot.resourceBundle;
 import static handiebot.utils.MessageUtils.sendFile;
 import static handiebot.utils.MessageUtils.sendMessage;
@@ -35,7 +37,9 @@ public class TengwarCommand extends ContextCommand {
                         24f,
                         false,
                         false,
-                        System.getProperty("user.home")+"/.handiebot/tengwarTemp.png"),
+                        System.getProperty("user.home")+"/.handiebot/tengwarTemp.png",
+                        Color.white,
+                        Color.black),
                         "Raw text: `" +result+'`',
                         context.getChannel());
             } else if (context.getArgs()[0].equalsIgnoreCase("from")){

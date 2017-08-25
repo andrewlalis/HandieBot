@@ -8,6 +8,9 @@ import handiebot.lavaplayer.playlist.Playlist;
 import handiebot.view.BotLog;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
@@ -21,11 +24,12 @@ public class QueueCommand extends ContextCommand {
 
     public QueueCommand() {
         super("queue",
-                "[all|clear|save]",
+                "[all|clear|save|remove]",
                 resourceBundle.getString("commands.command.queue.description.main")+"\n" +
                         "\t`all` - "+resourceBundle.getString("commands.command.queue.description.all")+"\n" +
                         "\t`clear` - "+resourceBundle.getString("commands.command.queue.description.clear")+"\n" +
-                        "\t`save <PLAYLIST>` - "+resourceBundle.getString("commands.command.queue.description.save"),
+                        "\t`save <PLAYLIST>` - "+resourceBundle.getString("commands.command.queue.description.save")+"\n"+
+                        "\t`remove <INDEX| INDEX2...>` - "+resourceBundle.getString("commands.command.queue.description.remove"),
                 0);
     }
 
@@ -53,6 +57,21 @@ public class QueueCommand extends ContextCommand {
                         sendMessage(resourceBundle.getString("commands.command.queue.error.save"), context.getChannel());
                     }
                     break;
+                case ("remove"):
+                    if (context.getArgs().length > 1 && Commands.hasPermission(context, 8)){
+                        List<Integer> songsToRemove = new ArrayList<>();
+                        for (int i = 1; i < context.getArgs().length; i++){
+                            songsToRemove.add(Integer.parseInt(context.getArgs()[i]));
+                        }
+                        songsToRemove.sort(Collections.reverseOrder());
+                        for (Integer i : songsToRemove){
+                            HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.remove(i-1);
+                        }
+                        sendMessage(resourceBundle.getString("commands.command.queue.remove.message"), context.getChannel());
+                        log.log(BotLog.TYPE.MUSIC, context.getGuild(), resourceBundle.getString("commands.command.queue.remove.message"));
+                    } else {
+                        sendMessage(resourceBundle.getString("commands.command.queue.remove.error"), context.getChannel());
+                    }
             }
         } else {
             HandieBot.musicPlayer.showQueueList(context.getGuild(), false);
