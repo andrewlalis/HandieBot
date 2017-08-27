@@ -38,8 +38,8 @@ public class TrackScheduler extends AudioEventAdapter {
 
     private Playlist activePlaylist;
 
-    private boolean repeat = true;
-    private boolean shuffle = false;
+    private boolean repeat;
+    private boolean shuffle;
 
     private IGuild guild;
 
@@ -52,7 +52,8 @@ public class TrackScheduler extends AudioEventAdapter {
         this.player = player;
         this.guild = guild;
         this.activePlaylist = new Playlist("HandieBot Active Playlist");
-        //this.activePlaylist = new Playlist("HandieBot Active Playlist");
+        this.repeat = Boolean.parseBoolean(HandieBot.settings.getProperty(guild.getName()+"_repeat"));
+        this.shuffle = Boolean.parseBoolean(HandieBot.settings.getProperty(guild.getName()+"_shuffle"));
     }
 
     /**

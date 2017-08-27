@@ -2,17 +2,13 @@ package handiebot.utils;
 
 import handiebot.view.BotLog;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static handiebot.HandieBot.log;
-import static handiebot.HandieBot.resourceBundle;
+import static handiebot.HandieBot.*;
 
 /**
  * @author Andrew Lalis
@@ -57,6 +53,14 @@ public class FileUtil {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("fileutil.writeError"), file.getAbsolutePath()));
+        }
+    }
+
+    public static void saveSettings(){
+        try {
+            settings.store(new FileWriter(FileUtil.getDataDirectory()+"settings"), "Settings for HandieBot");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

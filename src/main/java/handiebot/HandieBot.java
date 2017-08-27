@@ -17,7 +17,10 @@ import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RateLimitException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -40,6 +43,9 @@ public class HandieBot {
             System.exit(-1);
         }
     }
+
+
+
     //Variable to enable or disable GUI.
     private static boolean USE_GUI = true;
 
@@ -68,28 +74,6 @@ public class HandieBot {
 
     //The cross-guild music player.
     public static MusicPlayer musicPlayer;
-
-    //List of all permissions needed to operate this bot.
-    private static final int permissionsNumber;
-    static {
-        List<Permissions> requiredPermissions = new ArrayList<>();
-        requiredPermissions.add(Permissions.CHANGE_NICKNAME);
-        requiredPermissions.add(Permissions.ADD_REACTIONS);
-        requiredPermissions.add(Permissions.MANAGE_CHANNELS);
-        requiredPermissions.add(Permissions.EMBED_LINKS);
-        requiredPermissions.add(Permissions.ATTACH_FILES);
-        requiredPermissions.add(Permissions.MANAGE_EMOJIS);
-        requiredPermissions.add(Permissions.MANAGE_MESSAGES);
-        requiredPermissions.add(Permissions.MANAGE_PERMISSIONS);
-        requiredPermissions.add(Permissions.READ_MESSAGE_HISTORY);
-        requiredPermissions.add(Permissions.READ_MESSAGES);
-        requiredPermissions.add(Permissions.SEND_MESSAGES);
-        requiredPermissions.add(Permissions.VOICE_CONNECT);
-        requiredPermissions.add(Permissions.VOICE_MUTE_MEMBERS);
-        requiredPermissions.add(Permissions.VOICE_SPEAK);
-        requiredPermissions.add(Permissions.VOICE_USE_VAD);
-        permissionsNumber = Permissions.generatePermissionsNumber(EnumSet.copyOf(requiredPermissions));
-    }
 
     @EventSubscriber
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -163,11 +147,7 @@ public class HandieBot {
         musicPlayer.quitAll();
         client.logout();
         window.dispose();
-        try {
-            settings.store(new FileWriter(FileUtil.getDataDirectory()+"settings"), "Settings for HandieBot");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileUtil.saveSettings();
         System.exit(0);
     }
 
