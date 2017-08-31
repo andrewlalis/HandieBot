@@ -6,7 +6,7 @@
 
     <groupId>com.github.andrewlalis</groupId>
     <artifactId>HandieBot</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
     <build>
         <plugins>
             <plugin>

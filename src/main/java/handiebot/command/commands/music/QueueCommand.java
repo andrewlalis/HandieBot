@@ -5,6 +5,7 @@ import handiebot.command.CommandContext;
 import handiebot.command.Commands;
 import handiebot.command.types.ContextCommand;
 import handiebot.lavaplayer.playlist.Playlist;
+import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.view.BotLog;
 
 import java.text.MessageFormat;
@@ -24,12 +25,13 @@ public class QueueCommand extends ContextCommand {
 
     public QueueCommand() {
         super("queue",
-                "[all|clear|save|remove]",
+                "[all|clear|save|remove|move]",
                 resourceBundle.getString("commands.command.queue.description.main")+"\n" +
                         "\t`all` - "+resourceBundle.getString("commands.command.queue.description.all")+"\n" +
                         "\t`clear` - "+resourceBundle.getString("commands.command.queue.description.clear")+"\n" +
                         "\t`save <PLAYLIST>` - "+resourceBundle.getString("commands.command.queue.description.save")+"\n"+
-                        "\t`remove <INDEX| INDEX2...>` - "+resourceBundle.getString("commands.command.queue.description.remove"),
+                        "\t`remove <INDEX| INDEX2...>` - "+resourceBundle.getString("commands.command.queue.description.remove")+"\n"+
+                        "\t`move <INDEX> <INDEX> - "+resourceBundle.getString("commands.command.queue.description.move"),
                 0);
     }
 
@@ -71,6 +73,24 @@ public class QueueCommand extends ContextCommand {
                         log.log(BotLog.TYPE.MUSIC, context.getGuild(), resourceBundle.getString("commands.command.queue.remove.message"));
                     } else {
                         sendMessage(resourceBundle.getString("commands.command.queue.remove.error"), context.getChannel());
+                    }
+                case ("move"):
+                    if (context.getArgs().length == 3 && Commands.hasPermission(context, 8)){
+                        int startIndex = Integer.parseInt(context.getArgs()[1]);
+                        int newIndex = Integer.parseInt(context.getArgs()[2]);
+                        Playlist playlist = HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler.getActivePlaylist();
+                        int trackCount = playlist.getTrackCount();
+                        //Test if the indices are valid, and if not, show an error message.
+                        if ((startIndex > 0) && (startIndex <= trackCount) && (newIndex > 0) && (newIndex <= trackCount)){
+                            List<UnloadedTrack> tracks = playlist.getTracks();
+                            UnloadedTrack track = tracks.remove(startIndex-1);
+                            tracks.add(newIndex-1, track);
+                            sendMessage(MessageFormat.format(resourceBundle.getString("commands.command.queue.move.success"), track.getTitle(), startIndex, newIndex), context.getChannel());
+                        } else {
+                            sendMessage(resourceBundle.getString("commands.command.queue.move.indexError"), context.getChannel());
+                        }
+                    } else {
+                        sendMessage(resourceBundle.getString("commands.command.queue.move.error"), context.getChannel());
                     }
             }
         } else {
