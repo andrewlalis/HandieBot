@@ -17,7 +17,7 @@ import static handiebot.HandieBot.log;
  * This is useful for quickly loading playlists and only loading a track when it is needed.
  */
 public class UnloadedTrack implements Cloneable {
-
+//TODO: Externalize strings.
     private String title;
     private String url;
     private long duration;

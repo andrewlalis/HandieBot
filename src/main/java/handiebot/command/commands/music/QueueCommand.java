@@ -37,6 +37,7 @@ public class QueueCommand extends ContextCommand {
 
     @Override
     public void execute(CommandContext context) {
+        //TODO: Ensure that queue embed never runs out of space.
         if (context.getArgs().length > 0){
             switch (context.getArgs()[0]){
                 case ("all"):
@@ -74,6 +75,7 @@ public class QueueCommand extends ContextCommand {
                     } else {
                         sendMessage(resourceBundle.getString("commands.command.queue.remove.error"), context.getChannel());
                     }
+                    break;
                 case ("move"):
                     if (context.getArgs().length == 3 && Commands.hasPermission(context, 8)){
                         int startIndex = Integer.parseInt(context.getArgs()[1]);
@@ -92,6 +94,7 @@ public class QueueCommand extends ContextCommand {
                     } else {
                         sendMessage(resourceBundle.getString("commands.command.queue.move.error"), context.getChannel());
                     }
+                    break;
             }
         } else {
             HandieBot.musicPlayer.showQueueList(context.getGuild(), false);
