@@ -1,6 +1,8 @@
 package handiebot.command.commands.music;
 
 import com.google.api.services.youtube.model.Video;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import handiebot.HandieBot;
 import handiebot.command.CommandContext;
 import handiebot.command.ReactionHandler;
@@ -11,6 +13,7 @@ import handiebot.lavaplayer.playlist.UnloadedTrack;
 import handiebot.utils.MessageUtils;
 import handiebot.utils.YoutubeSearch;
 import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.IVoiceChannel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +76,19 @@ public class PlayNowCommand extends ContextCommand {
      */
     private void playTrackNow(UnloadedTrack track, CommandContext context){
         TrackScheduler scheduler = HandieBot.musicPlayer.getMusicManager(context.getGuild()).scheduler;
-        scheduler.getActivePlaylist().getTracks().add(0, track);
-        scheduler.nextTrack();
+        AudioPlayer player = HandieBot.musicPlayer.getMusicManager(context.getGuild()).player;
+        AudioTrack currentTrack = player.getPlayingTrack();
+        if (currentTrack != null){
+            player.stopTrack();
+            if (scheduler.isRepeating()){
+                scheduler.getActivePlaylist().addTrack(new UnloadedTrack(currentTrack));
+            }
+        }
+        AudioTrack aTrack = track.loadAudioTrack();
+        IVoiceChannel voiceChannel = HandieBot.musicPlayer.getVoiceChannel(context.getGuild());
+        if (!voiceChannel.isConnected()){
+            voiceChannel.join();
+        }
+        player.startTrack(aTrack, false);
     }
 }
