@@ -33,6 +33,7 @@ public class Commands {
     static {
         //Music commands.
         commands.add(new PlayCommand());
+        commands.add(new PlayNowCommand());
         commands.add(new StopCommand());
         commands.add(new QueueCommand());
         commands.add(new SkipCommand());
