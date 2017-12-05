@@ -67,6 +67,20 @@ public class Playlist {
     }
 
     /**
+     * Determines if the playlist already has a song with the same URL.
+     * @param track The track to check existence of.
+     * @return True if the track exists in the playlist, and false if not.
+     */
+    public boolean hasTrack(UnloadedTrack track){
+        for (UnloadedTrack t : this.tracks){
+            if (t.getURL().equalsIgnoreCase(track.getURL())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Copies all the tracks from another playlist onto this one.
      * @param playlist A playlist.
      */
@@ -108,7 +122,9 @@ public class Playlist {
     public void loadTrack(String url){
         try {
             UnloadedTrack track = new UnloadedTrack(url);
-            this.tracks.add(track);
+            if (!this.hasTrack(track)) {
+                this.tracks.add(track);
+            }
             log.log(BotLog.TYPE.MUSIC, MessageFormat.format(resourceBundle.getString("playlist.loadTrack.log"), track.getTitle(), this.name));
         } catch (Exception e) {
             log.log(BotLog.TYPE.ERROR, MessageFormat.format(resourceBundle.getString("playlist.loadTrack.error"), url, this.name));
