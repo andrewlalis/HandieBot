@@ -25,8 +25,8 @@ import sx.blah.discord.util.EmbedBuilder;
 
 import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
@@ -76,14 +76,13 @@ public class YoutubeSearch {
      * @throws IOException
      */
     public static Credential authorize() throws IOException {
+
         // Load client secrets.
-        InputStream in = YoutubeSearch.class.getClassLoader().getResourceAsStream("client_secret.json");
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
+                new InputStreamReader(new FileInputStream(FileUtil.getDataDirectory()+"googleData/client_secret.json")));
 
         // Build flow and trigger user authorization request.
-        GoogleAuthorizationCodeFlow flow =
-                new GoogleAuthorizationCodeFlow.Builder(
-                        HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
                         .setDataStoreFactory(DATA_STORE_FACTORY)
                         .setAccessType("offline")
                         .build();

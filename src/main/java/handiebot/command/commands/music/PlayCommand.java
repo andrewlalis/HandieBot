@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static handiebot.HandieBot.log;
 import static handiebot.HandieBot.resourceBundle;
 import static handiebot.utils.MessageUtils.sendMessage;
 import static handiebot.utils.YoutubeSearch.WATCH_URL;
@@ -99,6 +100,8 @@ public class PlayCommand extends ContextCommand {
                     videos.forEach((video) -> urls.add(WATCH_URL+video.getId()));
                     IMessage message = YoutubeSearch.displayChoicesDialog(videos, context.getChannel());
                     ReactionHandler.addListener(new YoutubePlayListener(message, context.getUser(), urls));
+                } else {
+                    log.log(BotLog.TYPE.ERROR, "YouTube query returned a null list of videos.");
                 }
             }
         }

@@ -2,6 +2,7 @@ package handiebot.command;
 
 import handiebot.command.types.ReactionListener;
 import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.ReactionEvent;
+import sx.blah.discord.util.RequestBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +14,12 @@ import java.util.List;
 public class ReactionHandler {
 
     private static List<ReactionListener> listeners = new ArrayList<>();
+    //Flag to tell if the handler is iterating over the listeners.
     private static boolean iterating = false;
+    //Queue of listeners to remove after an iteration.
     private static List<ReactionListener> listenersToRemove = new ArrayList<>();
+    //Flag that individual listeners can set to request the message be deleted after processing.
+    private static boolean deleteRequested = false;
     /**
      * Adds a listener, so that it is notified when reaction events are received.
      * @param listener The listener to add.
@@ -36,6 +41,13 @@ public class ReactionHandler {
     }
 
     /**
+     * Requests that the currently processing message should be deleted after the iteration.
+     */
+    public static void requestMessageDeletion(){
+        deleteRequested = true;
+    }
+
+    /**
      * Notifies all listeners that a ReactionEvent has occurred, and calls each one's function.
      * @param event The event that occurred.
      */
@@ -45,6 +57,10 @@ public class ReactionHandler {
             listener.onReactionEvent(event);
         }
         iterating = false;
+        if (deleteRequested) {
+            RequestBuffer.request(event.getMessage()::delete);
+        }
+        deleteRequested = false;
         listeners.removeAll(listenersToRemove);
         listenersToRemove.clear();
     }

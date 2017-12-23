@@ -17,10 +17,6 @@ import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RateLimitException;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -35,35 +31,16 @@ public class HandieBot {
     public static final String APPLICATION_NAME = "HandieBot";
 
     //The token required for logging into Discord. This is secure and must not be in the source code on GitHub.
-    private static final String TOKEN;
-    static {
-        TOKEN = readToken();
-        if (TOKEN.isEmpty()){
-            System.out.println("You do not have the token required to start the bot. Shutting down.");
-            System.exit(-1);
-        }
-    }
-
-
+    private static String TOKEN;
 
     //Variable to enable or disable GUI.
     private static boolean USE_GUI = true;
 
     //Settings for the bot. Tries to load the settings, or if that doesn't work, it will load defaults.
     public static Properties settings;
-    static{
-        try {
-            Properties defaultSettings = new Properties();
-            defaultSettings.load(HandieBot.class.getClassLoader().getResourceAsStream("default_settings"));
-            settings = new Properties(defaultSettings);
-            settings.load(new FileInputStream(FileUtil.getDataDirectory()+"settings"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     //Resource bundle for localized strings.
-    public static ResourceBundle resourceBundle = ResourceBundle.getBundle("Strings", Locale.forLanguageTag(settings.getProperty("language")));
+    public static ResourceBundle resourceBundle;
 
     //Discord client object.
     public static IDiscordClient client;
@@ -91,7 +68,24 @@ public class HandieBot {
         //client.changeAvatar(Image.forStream("png", getClass().getClassLoader().getResourceAsStream("avatarIcon.png")));
     }
 
+    /**
+     * Set up the basic functions of the bot.
+     */
+    private static void init(){
+        TOKEN = FileUtil.readToken();
+        if (TOKEN.isEmpty()){
+            System.out.println("You do not have the token required to start the bot. Shutting down.");
+            System.exit(-1);
+        }
+
+        settings = FileUtil.loadSettings();
+
+        resourceBundle = ResourceBundle.getBundle("Strings", Locale.forLanguageTag(settings.getProperty("language")));
+    }
+
     public static void main(String[] args) throws DiscordException, RateLimitException {
+
+        init();
 
         musicPlayer = new MusicPlayer();
 
@@ -125,21 +119,6 @@ public class HandieBot {
     }
 
     /**
-     * Reads the private discord token necessary to start the bot. If this fails, the bot will shut down.
-     * @return The string token needed to log in.
-     */
-    private static String readToken(){
-        String path = FileUtil.getDataDirectory()+"token.txt";
-        String result = "";
-        try(BufferedReader reader = new BufferedReader(new FileReader(path))){
-            result = reader.readLine();
-        } catch (IOException e) {
-            System.err.println("Unable to find the token file. You are unable to start the bot without this.");
-        }
-        return result;
-    }
-
-    /**
      * Safely shuts down the bot on all guilds.
      */
     public static void quit(){
@@ -147,7 +126,7 @@ public class HandieBot {
         musicPlayer.quitAll();
         client.logout();
         window.dispose();
-        FileUtil.saveSettings();
+        FileUtil.saveSettings(settings);
         System.exit(0);
     }
 

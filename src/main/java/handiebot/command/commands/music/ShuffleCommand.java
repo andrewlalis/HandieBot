@@ -9,6 +9,7 @@ import handiebot.utils.FileUtil;
 import java.text.MessageFormat;
 
 import static handiebot.HandieBot.resourceBundle;
+import static handiebot.HandieBot.settings;
 import static handiebot.utils.MessageUtils.sendMessage;
 
 /**
@@ -31,7 +32,7 @@ public class ShuffleCommand extends ContextCommand {
             HandieBot.musicPlayer.setShuffle(context.getGuild(), shouldShuffle);
             //Save the settings for this guild to the settings file.
             HandieBot.settings.setProperty(context.getGuild().getName()+"_shuffle", Boolean.toString(shouldShuffle));
-            FileUtil.saveSettings();
+            FileUtil.saveSettings(settings);
         } else {
             sendMessage(MessageFormat.format(resourceBundle.getString("player.getShuffle"), HandieBot.musicPlayer.isShuffling(context.getGuild())), context.getChannel());
         }

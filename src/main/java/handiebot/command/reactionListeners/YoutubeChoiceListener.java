@@ -6,7 +6,6 @@ import handiebot.view.BotLog;
 import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.ReactionEvent;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.util.RequestBuffer;
 
 import java.util.List;
 
@@ -56,7 +55,7 @@ public abstract class YoutubeChoiceListener implements ReactionListener {
         if ((event.getMessage().getLongID() == this.message.getLongID()) &&
                 (this.user.getLongID() == event.getUser().getLongID())){
             for (int i = 0; i < choices.length; i++){
-                if (event.getReaction().toString().equals(choices[i])){
+                if (event.getReaction().getEmoji().getName().equals(choices[i])){
                     onChoice(i);
                     break;
                 }
@@ -69,7 +68,7 @@ public abstract class YoutubeChoiceListener implements ReactionListener {
      * Method to delete the large, unwieldy message and remove the listener for this set of videos.
      */
     private void cleanup(){
-        RequestBuffer.request(message::delete);
+        ReactionHandler.requestMessageDeletion();
         ReactionHandler.removeListener(this);
     }
 
